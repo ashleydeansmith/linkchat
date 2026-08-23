@@ -1,0 +1,30 @@
+# Working state. None of this belongs to anybody but the person running it.
+# Note: a comment must sit on its own line. Git treats a trailing comment as part
+# of the pattern, so "linkchat.json  # your CRM" matches nothing and the file ships.
+_state/
+*.db
+*.log
+
+# Which CRM this copy points at, and the name that goes on the approval line.
+linkchat.json
+
+engine/data/
+ms-playwright/
+dist_mac/
+
+# Built things
+#
+# web/dist IS committed on purpose. It is the screens, already built. Without it a
+# member who clones this gets a program that answers "the screens have not been
+# built yet" and is told to install Node and run a build - which is not a thing to
+# ask of somebody who has never used a terminal.
+web/node_modules/
+desktop/node_modules/
+__pycache__/
+*.pyc
+
+# Files taken out of the program and kept rather than deleted. They are the copies
+# that came over from the program LinkChat was cut out of, before they were
+# rewritten: the book-keeping that named one particular computer, the shared
+# engine behind it, and a ceiling nothing used. Kept here to read, not to ship.
+_retired/

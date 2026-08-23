@@ -1,0 +1,46 @@
+/* Waiting for you — the approval step. */
+
+.ck-wrap { padding:18px 20px; overflow-y:auto; height:100%; }
+
+.ck-intro {
+  font-size:13.5px; line-height:1.6; color:var(--muted,#4b5563);
+  border-left:3px solid #0B6E6C; padding:2px 0 2px 12px; margin-bottom:18px;
+}
+
+.ck-empty {
+  padding:28px; text-align:center; color:var(--muted,#6b7280);
+  font-size:13.5px; line-height:1.6; max-width:520px; margin:0 auto;
+}
+
+.ck-error {
+  margin-bottom:14px; padding:10px 12px; border-radius:8px; font-size:13px;
+  background:#FEF2F2; color:#991B1B; border:1px solid #FCA5A5;
+}
+
+.ck-list { display:flex; flex-direction:column; gap:12px; }
+
+.ck-card {
+  border:1px solid var(--line,#e5e7eb); border-radius:12px;
+  background:var(--panel,#fff); padding:16px 18px;
+}
+.ck-to { font-weight:600; font-size:14px; margin-bottom:8px; }
+.ck-body {
+  font-size:14px; line-height:1.6; white-space:pre-wrap;
+  padding:10px 12px; border-radius:8px; background:var(--bg,#f6f7f9);
+}
+.ck-foot {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:12px; gap:12px;
+}
+.ck-by { font-size:12px; color:var(--muted,#6b7280); }
+.ck-approve {
+  padding:9px 16px; border-radius:8px; font-size:13.5px; font-family:inherit;
+  background:#0B6E6C; color:#fff; border:1px solid #0B6E6C; cursor:pointer;
+}
+.ck-approve:disabled { opacity:.55; cursor:not-allowed; }
+
+.ck-done { margin-top:22px; border-top:1px solid var(--line,#e5e7eb); padding-top:14px; }
+.ck-done-head { font-size:12px; text-transform:uppercase; letter-spacing:.04em;
+                color:var(--muted,#6b7280); margin-bottom:8px; }
+.ck-done-row { font-size:13px; line-height:1.6; margin-bottom:10px; }
+.ck-path { font-size:11.5px; color:var(--muted,#9ca3af); word-break:break-all; }

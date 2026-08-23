@@ -1,0 +1,13 @@
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+playwright>=1.44
+
+# The window itself. Without this the double-click opens nothing at all, so it is
+# not optional even though the program will still serve without it.
+pywebview>=5.0
+
+# Reading whether a process is still alive, and finding the browser LinkChat
+# started. Without it the program imports and then fails the moment anything
+# touches the browser, which is the moment that matters. It was missing.
+psutil>=5.9

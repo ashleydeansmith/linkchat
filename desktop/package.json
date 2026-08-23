@@ -1,0 +1,54 @@
+{
+  "name": "linkchat-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LinkChat desktop window - your conversations, and the sequences that run off them.",
+  "author": "Ashley Dean Smith",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "@electron/osx-sign": "^1.3.1",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.ashleydeansmith.linkchat",
+    "productName": "LinkChat",
+    "afterPack": "./afterPack.js",
+    "files": [
+      "main.js",
+      "updater.js",
+      "preload.js"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.business",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extraResources": [
+        {
+          "from": "../dist_mac/linkchat-engine",
+          "to": "engine"
+        },
+        {
+          "from": "../ms-playwright",
+          "to": "ms-playwright"
+        }
+      ]
+    },
+    "dmg": {
+      "writeUpdateInfo": false
+    }
+  }
+}

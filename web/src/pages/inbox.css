@@ -1,0 +1,135 @@
+/* inbox.css — the 3-pane inbox surface (InboxForge merge). Scoped under .ibx.
+   Negative margins cancel .content's 26/40px padding so the inbox fills the pane;
+   uses the app's existing design tokens (var(--primary) etc.) for theme parity. */
+
+.ibx {
+  margin: -26px -26px -40px;
+  height: calc(100vh - 57px);          /* full height minus the topbar */
+  display: grid;
+  grid-template-columns: 198px 348px 1fr;
+  min-height: 0;
+  background: var(--surface);
+}
+.ibx > * { min-height: 0; overflow: auto; }
+
+/* --- rail (boxes + tags) --- */
+.ibx-rail { border-right: 1px solid var(--line); background: var(--c-low); padding: 14px 10px; display: flex; flex-direction: column; gap: 3px; }
+.ibx-rail .sec { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin: 14px 8px 4px; }
+.ibx-box { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 9px; border-radius: 9px; border: none; background: transparent; color: var(--ink); font-size: 13.5px; cursor: pointer; text-align: left; width: 100%; }
+.ibx-box:hover { background: var(--c); }
+.ibx-box.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.ibx-box .badge { font-size: 11.5px; color: var(--ink-3); background: var(--c); border-radius: 999px; padding: 1px 7px; min-width: 20px; text-align: center; }
+.ibx-box.active .badge { color: var(--primary); background: #fff2; }
+.ibx-tag { display: flex; align-items: center; gap: 7px; }
+.ibx-tag .dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.ibx-tagrow { display: flex; align-items: center; }
+.ibx-tagrow .x { opacity: 0; border: none; background: none; color: var(--ink-3); cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.ibx-tagrow:hover .x { opacity: 1; }
+.ibx-rail .railbtn { margin-top: 10px; }
+
+/* --- list --- */
+.ibx-list { border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+.ibx-search { padding: 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.ibx-search input { width: 100%; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--c-low); color: var(--ink); font-size: 13px; }
+.ibx-conv { display: flex; gap: 10px; padding: 11px 13px; border-bottom: 1px solid var(--line); cursor: pointer; align-items: flex-start; }
+.ibx-conv:hover { background: var(--c-low); }
+.ibx-conv.active { background: var(--primary-soft); }
+.ibx-av { width: 40px; height: 40px; border-radius: 50%; flex: none; object-fit: cover; background: var(--c); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.ibx-conv .body { flex: 1; min-width: 0; }
+.ibx-conv .nm { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibx-conv .hl { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibx-conv .pv { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ibx-conv .meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.ibx-conv .tm { font-size: 11px; color: var(--ink-3); }
+.ibx-owe { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+.ibx-unread { background: var(--primary); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 6px; min-width: 18px; text-align: center; }
+.ibx-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.ibx-chip { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: var(--c); color: var(--ink-2); }
+
+/* --- panel (thread + composer + crm) --- */
+.ibx-panel { display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: 1fr 240px; grid-template-areas: "head head" "thread crm" "composer crm"; }
+/* collapse the right-hand details (note/snooze/labels) to give the thread full width */
+.ibx-panel.crm-collapsed { grid-template-columns: 1fr 0; }
+.ibx-panel.crm-collapsed .ibx-crm { display: none; }
+.ibx-head { grid-area: head; padding: 13px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+.ibx-head .nm { font-weight: 700; font-size: 15px; }
+.ibx-head .hl { font-size: 12px; color: var(--ink-3); }
+.ibx-thread { grid-area: thread; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.ibx-msg { max-width: 74%; padding: 9px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.ibx-msg.in { align-self: flex-start; background: var(--c); color: var(--ink); border-bottom-left-radius: 4px; }
+.ibx-msg.out { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+.ibx-msg audio { display: block; margin-top: 6px; max-width: 230px; }
+.ibx-msg img { max-width: 230px; border-radius: 8px; margin-top: 6px; }
+.ibx-msg .tx { margin-top: 5px; font-size: 12px; opacity: .8; border-top: 1px solid var(--line); padding-top: 5px; }
+.ibx-composer { grid-area: composer; border-top: 1px solid var(--line); padding: 11px 14px; display: flex; flex-direction: column; gap: 8px; }
+.ibx-composer textarea { width: 100%; resize: none; min-height: 46px; max-height: 150px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--c-low); color: var(--ink); font: inherit; font-size: 13.5px; }
+.ibx-tools { display: flex; align-items: center; gap: 6px; }
+.ibx-tools .spacer { flex: 1; }
+.ibx-crm { grid-area: crm; border-left: 1px solid var(--line); padding: 14px; overflow: auto; display: flex; flex-direction: column; gap: 14px; background: var(--c-low); }
+.ibx-crm .lbl { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.ibx-crm textarea { width: 100%; min-height: 70px; resize: vertical; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12.5px; }
+.ibx-crm .row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* --- small shared bits --- */
+.ibx-btn { border: 1px solid var(--line); background: var(--c-low); color: var(--ink); border-radius: 9px; padding: 6px 11px; font-size: 12.5px; cursor: pointer; }
+.ibx-btn:hover { background: var(--c); }
+.ibx-btn.primary { background: var(--primary); color: #fff; border-color: transparent; }
+.ibx-btn.primary:disabled { opacity: .5; cursor: default; }
+.ibx-btn.tiny { padding: 4px 8px; font-size: 11.5px; }
+.ibx-btn.on { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
+.ibx-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--ink-3); font-size: 13.5px; text-align: center; padding: 30px; }
+.ibx-gifs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 200px; overflow: auto; padding: 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.ibx-gifs img { width: 100%; border-radius: 6px; cursor: pointer; }
+.ibx-banner { font-size: 12px; color: var(--ink-2); padding: 4px 2px; }
+
+/* first-run onboarding callout (shown until the first sync brings conversations in) */
+.ibx-firstrun { padding: 26px 20px; color: var(--ink-2); }
+.ibx-firstrun .big { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.ibx-firstrun p { font-size: 13px; line-height: 1.5; margin: 0 0 12px; }
+.ibx-firstrun ol { margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.ibx-firstrun b { color: var(--ink); }
+
+/* voice-note recording + review bar (sits above the composer tools row) */
+.ibx-voicebar { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--c-low); }
+.ibx-voicebar .spacer { flex: 1; }
+.ibx-voicebar.recording { border-color: var(--primary); }
+.ibx-voicebar .vrec-dot { color: var(--red, #e5484d); font-size: 12px; animation: ibx-vpulse 1s ease-in-out infinite; }
+.ibx-voicebar .vrec-time { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; color: var(--ink); }
+.ibx-voicebar .vrec-len { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink-3); }
+.ibx-voicebar audio { height: 34px; max-width: 340px; }
+/* the red "cuts off in Ns" countdown — only shows in the final 10s */
+.ibx-voicebar .vrec-warn { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 12px; color: #fff; background: var(--red, #e5484d); padding: 3px 9px; border-radius: 7px; animation: ibx-vpulse 1s ease-in-out infinite; }
+.ibx-voicebar.warn { border-color: var(--red, #e5484d); }
+.ibx-voicebar.warn .vrec-time { color: var(--red, #e5484d); }
+@keyframes ibx-vpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+/* microphone picker in the composer tools row (restored from InboxForge) */
+.ibx-mic { font: inherit; font-size: 11.5px; border: 1px solid var(--line); border-radius: 9px; padding: 4px 7px; background: var(--c-low); color: var(--ink); max-width: 180px; cursor: pointer; }
+.ibx-mic:focus { border-color: var(--primary); outline: none; }
+
+/* --- suggested-give panel (DM reply cockpit) — sits above the composer textarea --- */
+/* Manual-first: each bubble is a button that loads its text into the composer; the operator
+   edits and taps the existing Send. Bubbles get a ✓ once actually sent. */
+.ibx-suggest { border: 1px solid var(--line); border-radius: 10px; background: var(--c-low); padding: 9px 11px; display: flex; flex-direction: column; gap: 9px; max-height: 230px; overflow: auto; }
+.ibx-suggest-head { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.ibx-suggest-none { font-size: 12px; color: var(--ink-3); padding: 2px 2px 4px; }
+.ibx-give { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 9px; border: 1px solid transparent; background: var(--surface); }
+.ibx-give.active { border-color: var(--primary); background: var(--primary-soft); }
+.ibx-give-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ibx-give-name { font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+.ibx-give-done { font-size: 11px; font-weight: 600; color: var(--green, #30a46c); }
+.ibx-bubbles { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; counter-reset: bub; }
+.ibx-bubbles li { display: flex; }
+.ibx-bubble { flex: 1; text-align: left; border: 1px solid var(--line); background: var(--c-low); color: var(--ink); border-radius: 9px; padding: 7px 10px; font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; white-space: pre-wrap; word-break: break-word; }
+.ibx-bubble:hover { background: var(--c); border-color: var(--primary); }
+.ibx-bubble.cur { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+.ibx-bubble.sent { opacity: .62; }
+.ibx-bubble.sent:hover { opacity: 1; }
+
+/* What the engine answered, in its own words. A refusal is not a failure: the
+   hold list stopping a message is the program working, so it is shown in the
+   same calm type as a confirmation and only the colour differs. */
+.ibx-composer .row { display: flex; align-items: center; gap: 10px; }
+.ibx-composer .muted { font-size: 11.5px; color: var(--ink-dim, #8a8a8a); }
+.ibx-said { font-size: 12.5px; line-height: 1.45; padding: 8px 10px; border-radius: 8px;
+            background: var(--c-low); border: 1px solid var(--line); }
+.ibx-said.bad { border-color: var(--amber, #c8a23a); }

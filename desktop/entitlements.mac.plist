@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    LinkForge macOS entitlements (ad-hoc / free-path build).
+
+    THE LOAD-BEARING KEY is com.apple.security.cs.disable-library-validation.
+    The 2.2.15 ad-hoc DMG crashed at launch on macOS 26 with:
+      "Electron Framework ... not valid for use in process: ... different Team IDs"
+    That is Apple Silicon's team-ID match check on every image mapped into the process.
+    Electron's pre-built framework does not share an ad-hoc empty-team identity coherently,
+    so the load is rejected. disable-library-validation tells the loader to allow loading
+    code that isn't signed with the same team ID — which is exactly the crash. The remaining
+    keys are Electron/Chromium's standard JIT + executable-memory + dyld-env requirements.
+  -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+  <true/>
+</dict>
+</plist>

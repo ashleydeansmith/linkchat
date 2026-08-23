@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="LinkForge">
+  <defs>
+    <linearGradient id="lf-teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B6E6C"/><stop offset="1" stop-color="#27D3C4"/>
+    </linearGradient>
+    <linearGradient id="lf-spark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC53D"/><stop offset="1" stop-color="#FF8A1E"/>
+    </linearGradient>
+  </defs>
+  <!-- forged link -->
+  <rect x="15" y="19" width="34" height="26" rx="13" fill="none" stroke="url(#lf-teal)" stroke-width="7.5"/>
+  <!-- forge spark struck through it (filled bolt) -->
+  <path d="M37 5 L26 31 L34 31 L27 51 L45 25 L36 25 Z" fill="url(#lf-spark)" stroke="#0d1717" stroke-width="0.6" stroke-opacity="0"/>
+</svg>

@@ -1,0 +1,87 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;background:#f4f7f7;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+  .col{padding:26px 18px;text-align:center;border-right:1px solid #e3eaea;}
+  .name{font-size:13px;font-weight:700;color:#0e2424;margin-bottom:4px;}
+  .desc{font-size:11px;color:#5e7070;margin-bottom:18px;min-height:28px;}
+  .lg{margin-bottom:16px;}
+  .dark{background:#0d1717;border-radius:12px;padding:16px;display:inline-block;margin-bottom:14px;}
+  .row{display:flex;gap:14px;align-items:center;justify-content:center;}
+  .fav{outline:1px dashed #c2cece;}
+  .lab{font-size:9px;color:#8a9a9a;margin-top:6px;}
+  svg{display:block}
+</style></head><body>
+<svg width="0" height="0"><defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0B6E6C"/><stop offset="1" stop-color="#27D3C4"/>
+  </linearGradient>
+</defs></svg>
+<div class="grid">
+
+  <!-- 1. INTERLOCK : two forged chain links -->
+  <div class="col">
+    <div class="name">1 · Interlock</div>
+    <div class="desc">Two forged chain links — literal "link", networked, professional.</div>
+    <div class="lg"><svg width="96" height="96" viewBox="0 0 64 64">
+      <g fill="none" stroke="url(#g)" stroke-width="7" stroke-linecap="round">
+        <rect x="9"  y="20" width="32" height="24" rx="12" transform="rotate(-22 25 32)"/>
+        <rect x="23" y="20" width="32" height="24" rx="12" transform="rotate(-22 39 32)"/>
+      </g></svg></div>
+    <div class="dark"><svg width="64" height="64" viewBox="0 0 64 64">
+      <g fill="none" stroke="url(#g)" stroke-width="7" stroke-linecap="round">
+        <rect x="9" y="20" width="32" height="24" rx="12" transform="rotate(-22 25 32)"/>
+        <rect x="23" y="20" width="32" height="24" rx="12" transform="rotate(-22 39 32)"/></g></svg></div>
+    <div class="row"><svg class="fav" width="24" height="24" viewBox="0 0 64 64"><g fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round"><rect x="9" y="20" width="32" height="24" rx="12" transform="rotate(-22 25 32)"/><rect x="23" y="20" width="32" height="24" rx="12" transform="rotate(-22 39 32)"/></g></svg></div>
+    <div class="lab">favicon 24px</div>
+  </div>
+
+  <!-- 2. LINK + SPARK : a single link with a forge spark -->
+  <div class="col">
+    <div class="name">2 · Link + Spark</div>
+    <div class="desc">One bold link, struck with a forge spark — "Link" + "Forge" in one.</div>
+    <div class="lg"><svg width="96" height="96" viewBox="0 0 64 64">
+      <rect x="14" y="18" width="36" height="28" rx="14" fill="none" stroke="url(#g)" stroke-width="7"/>
+      <path d="M40 8 L33 26 L41 26 L31 44" fill="none" stroke="#FFB020" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg></div>
+    <div class="dark"><svg width="64" height="64" viewBox="0 0 64 64">
+      <rect x="14" y="18" width="36" height="28" rx="14" fill="none" stroke="url(#g)" stroke-width="7"/>
+      <path d="M40 8 L33 26 L41 26 L31 44" fill="none" stroke="#FFB020" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="row"><svg class="fav" width="24" height="24" viewBox="0 0 64 64"><rect x="14" y="18" width="36" height="28" rx="14" fill="none" stroke="url(#g)" stroke-width="8"/><path d="M40 8 L33 26 L41 26 L31 44" fill="none" stroke="#FFB020" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="lab">favicon 24px</div>
+  </div>
+
+  <!-- 3. HEX FORGE : hexagonal forged tile + chain-link negative space -->
+  <div class="col">
+    <div class="name">3 · Hex Forge</div>
+    <div class="desc">A forged hex tile (bolt/metal) with a link cut into it. Solid, techy.</div>
+    <div class="lg"><svg width="96" height="96" viewBox="0 0 64 64">
+      <path d="M32 4 L54 17 L54 47 L32 60 L10 47 L10 17 Z" fill="url(#g)"/>
+      <rect x="20" y="24" width="24" height="16" rx="8" fill="none" stroke="#fff" stroke-width="4.5"/>
+    </svg></div>
+    <div class="dark"><svg width="64" height="64" viewBox="0 0 64 64">
+      <path d="M32 4 L54 17 L54 47 L32 60 L10 47 L10 17 Z" fill="url(#g)"/>
+      <rect x="20" y="24" width="24" height="16" rx="8" fill="none" stroke="#fff" stroke-width="4.5"/></svg></div>
+    <div class="row"><svg class="fav" width="24" height="24" viewBox="0 0 64 64"><path d="M32 4 L54 17 L54 47 L32 60 L10 47 L10 17 Z" fill="url(#g)"/><rect x="20" y="24" width="24" height="16" rx="8" fill="none" stroke="#fff" stroke-width="5"/></svg></div>
+    <div class="lab">favicon 24px</div>
+  </div>
+
+  <!-- 4. LF MONOGRAM : rounded-square tile + bold LF mark -->
+  <div class="col" style="border-right:none">
+    <div class="name">4 · LF Monogram</div>
+    <div class="desc">Rounded-square app tile + a clean LF lettermark. Evolves today's swatch.</div>
+    <div class="lg"><svg width="96" height="96" viewBox="0 0 64 64">
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#g)"/>
+      <path d="M20 16 V44 H36" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M34 16 H46 M34 29 H44" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    </svg></div>
+    <div class="dark"><svg width="64" height="64" viewBox="0 0 64 64">
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#g)"/>
+      <path d="M20 16 V44 H36" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M34 16 H46 M34 29 H44" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/></svg></div>
+    <div class="row"><svg class="fav" width="24" height="24" viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="16" fill="url(#g)"/><path d="M20 16 V44 H36" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 16 H46 M34 29 H44" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg></div>
+    <div class="lab">favicon 24px</div>
+  </div>
+
+</div>
+<div style="padding:18px 22px;font-size:12px;color:#5e7070">LinkForge logo concepts · teal forge gradient #0B6E6C→#27D3C4 · all vector (SVG), sharp at any size</div>
+</body></html>
