@@ -2,11 +2,12 @@
 
     python tests/run_all.py
 
-Four things run, in the order a fault would matter:
+Five checks run, in the order a fault would matter:
 
   installs      does this work on a computer that is not the one it was built on
   names         does anybody's LinkedIn name field get typed back at them
   the gate      can anything reach a person without clearing every check
+  the starter   does the sequence members start from carry any words of its own
   the walk      does every door answer with a sentence rather than a crash
 
 The first three read the code. The last one starts the engine and presses every
@@ -30,6 +31,7 @@ RUNS = [
     ("installs on a clean machine", "test_installs_on_a_clean_machine.py"),
     ("nobody's name typed back", "test_name_decoration.py"),
     ("nothing reaches a person unapproved", "test_nothing_sends_unapproved.py"),
+    ("the starter is a shape, not a script", "test_starter_sequence.py"),
     ("the walk", "walk.py"),
 ]
 

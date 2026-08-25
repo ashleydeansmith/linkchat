@@ -346,11 +346,23 @@ From now on this is the sequence LinkChat follows when it writes a message for y
              they reply. You write it once; it decides who is next and what they get.</p>
           <p>Nothing in a sequence reaches anybody on its own. It writes a message,
              you read it and approve it, and it goes to your outbox for you to send.</p>
+          <p>You can start from a shape rather than from nothing. It loads one
+             opening message and the four ways a person comes back from it, with
+             every message left as a gap for you to write. Nothing in it can send
+             until you have written all five in your own words.</p>
           <div className="cf-empty-actions">
+            <button className="btn primary" disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                const r = await api.flowsStartFromShape();
+                await loadVersions(r.id);
+                say("ok", "Loaded as a draft. Nothing sends until you write the five gaps in and Activate.");
+              } catch (e) { say("err", String(e.message || e)); } finally { setBusy(false); }
+            }}>Start from the shape</button>
             <button className="btn" disabled={busy} onClick={async () => {
               const r = await api.flowsCreateVersion({ name: "My first sequence" });
               await loadVersions(r.id);
-            }}>Start a sequence</button>
+            }}>Start from nothing</button>
           </div>
         </div>
       </div>

@@ -698,6 +698,35 @@ def flows_import(body: FlowImportBody) -> dict:
     return {"id": vid, "activated": body.activate}
 
 
+@app.post("/api/flows/start-from-shape")
+def flows_start_from_shape() -> dict:
+    """Load the starter sequence — the shape a member begins from.
+
+    The Sequences screen otherwise opens on a blank canvas, and a blank canvas
+    is where somebody who has never built a branch stops. This loads
+    `sequences/starter-sequence.json`: one opening message and the four ways a
+    person comes back from it, with every message left as a gap rather than as
+    words.
+
+    The gaps are the point. Check three refuses any message with a gap still in
+    it, so the starter cannot send anything until the member has written their
+    own words into all five. Nobody else's copy goes out under their name, and
+    there is no way to approve past it.
+
+    The file is found from the program's own folder rather than from wherever
+    the window happened to be started, because those are not the same folder
+    and the difference is invisible until it fails.
+    """
+    src = Path(__file__).resolve().parent.parent / "sequences" / "starter-sequence.json"
+    if not src.exists():
+        raise HTTPException(404, "the starter sequence is not in this copy of LinkChat")
+    try:
+        vid = _fe.import_flows_json(str(src), name="Starter sequence")
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"id": vid, "activated": False}
+
+
 @app.get("/api/flows/versions/{vid}/export")
 def flows_export(vid: int) -> dict:
     _flows_gate()

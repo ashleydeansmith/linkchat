@@ -210,6 +210,93 @@ When a check refuses, it says which one and why, in a sentence. Nothing is hidde
 
 ---
 
+## Your first sequence
+
+A sequence is an opening message, plus what you say back depending on how the person
+replies. You write it once. After that it decides who is next and what they get, and
+every message it writes waits for you to approve it.
+
+The Sequences screen starts empty, and a blank canvas is a hard place to start from. So
+you are offered a shape to work on top of.
+
+### Load it
+
+Open **Sequences**. Because you have not built one yet, the screen offers two buttons:
+
+- **Start from the shape** — loads the sequence described below.
+- **Start from nothing** — an empty canvas, if you would rather.
+
+Press **Start from the shape**. It arrives as a draft, and a draft changes nothing until
+you press **Activate**, so you can open it, read it and change your mind with nothing at
+stake.
+
+### What you get
+
+One opening message, and the four ways a person comes back from it:
+
+| | | |
+|---|---|---|
+| **No reply at all** | after four days | 309 of 812 people |
+| **A pleasantry only** | "thanks for connecting!" | 350 of 812 |
+| **Not now, or no** | | 57 of 812 |
+| **Interested, or asks you something** | | 42 of 812 |
+
+Those counts are from 812 real conversations, and the reason they are printed on the
+canvas is that they say something most people get backwards. **The two largest groups
+are the two that feel like failures.** The biggest group of all is the people who never
+replied — 309 of them — and not one message has ever been written for that group. The
+second biggest said something polite that answers nothing. Between them that is 659 of
+812 people, and almost all of the unworked ground is there.
+
+### Every message in it is empty on purpose
+
+Open any step and you will find something like this where the words should be:
+
+    {what you say to somebody who was only being polite - one question they
+     can answer in a sentence, about them and not about you}
+
+That is a gap, not a draft. **Check three refuses any message with a gap left in it**, so
+this sequence physically cannot send anything until you have replaced every gap with your
+own words. If you press approve on one before you have written it, it stops and tells you:
+*this still has a gap in it that nothing filled in. Write the words in yourself.*
+
+This is deliberate, and it is the reason you are given a shape rather than a script.
+Nobody else's words go out under your name, and you cannot get past it by not reading
+carefully. There are five gaps. Fill all five and the sequence runs.
+
+### Fill one in
+
+1. Click a step on the canvas. The panel on the right shows its words.
+2. Delete everything between the curly brackets, **and the brackets too**.
+3. Write what you would actually say. One or two sentences.
+4. Do the same for the other four.
+5. Press **Activate**.
+
+Under each branch there is a short note headed **never** — two lines saying what not to do
+in that particular reply. They are notes to yourself. Nothing sends them and nothing
+checks them.
+
+### Add a way back of your own
+
+Each branch is matched by the words people actually use. The **patterns** box holds those
+words — `thanks for connecting`, `not right now`, `how much`. A reply is matched against
+each branch in order and lands in the first one that fits.
+
+To add a fifth way back, add a branch and give it three or four phrases you have genuinely
+seen people write. Use the **preview** to see which of your real conversations it would
+have caught. A pattern must be at least three characters, because a shorter one matches
+nearly everything and swallows the whole inbox.
+
+Two rules worth keeping:
+
+- **Write the pattern you have seen, not the one you can imagine.** Read ten real replies
+  first and take the phrases out of them.
+- **Order matters.** The first branch that fits wins, so put the narrow ones above the
+  wide ones.
+
+
+---
+
 ## If your copy can read but not send
 
 LinkChat's checks are not LinkChat's rules. They are the parts you installed in **Layer 6**

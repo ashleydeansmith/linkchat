@@ -1,0 +1,101 @@
+{
+  "name": "Starter sequence",
+  "_doc": [
+    "A shape to start from, not a script to send.",
+    "",
+    "Every message in here is a gap in curly brackets rather than words. That is",
+    "deliberate and it is not an oversight. Check three of your send gate refuses",
+    "any message with a gap still in it, and says so: 'this still has {...} in it,",
+    "which is a gap nothing filled in. Write the words in yourself.' So this",
+    "sequence physically cannot send anything until you have replaced every gap",
+    "with your own words. Nothing of anybody else's goes out under your name by",
+    "accident, and you cannot approve your way past it.",
+    "",
+    "The shape is the part worth copying. It is four ways a person can come back",
+    "from an opening message, and they are the four that actually happen. The",
+    "numbers underneath them come from 812 real conversations:",
+    "",
+    "  no reply at all        309 people   the biggest group by far",
+    "  a pleasantry only      350 people   'thanks for connecting!' and nothing else",
+    "  not now, or no          57 people",
+    "  interested, asks back   42 people   the one you are doing all of it for",
+    "",
+    "The lesson in those numbers is the one nobody expects. The largest group is",
+    "the people who said nothing, and almost nothing has ever been written for",
+    "them. The second largest said something that is not an answer. Most of the",
+    "work is in the two branches that feel like failures."
+  ],
+  "openers": [
+    {
+      "id": "1",
+      "label": "Your opening message",
+      "text": "{your opening line - one or two sentences, in your own words, to somebody who has just connected with you}"
+    }
+  ],
+  "branches": [
+    {
+      "id": "R1",
+      "label": "They are interested, or they ask you something back",
+      "color": "#2f855a",
+      "read": "They wrote something that engages with what you said, or asked you a question. This is the one you built the sequence for. Answer the question first and completely, before anything else.",
+      "patterns": ["how do", "how does", "what do you", "tell me more", "interested", "sounds good", "curious", "can you send", "how much", "what would"],
+      "next_move": "{what you say to somebody who is genuinely interested - answer their question first, then one line about what happens next}",
+      "never": [
+        "Never answer a question with a link and nothing else.",
+        "Never pitch in the same message that answers their question."
+      ],
+      "forward": [
+        { "on": "they want to talk properly", "then": "send them the way to book time with you" },
+        { "on": "silence", "then": "route to R0" }
+      ]
+    },
+    {
+      "id": "R2",
+      "label": "Not now, or no",
+      "color": "#c05621",
+      "read": "They have said no, or not at the moment. Take it at face value. The reply that keeps a door open is worth more than the one that argues.",
+      "patterns": ["not right now", "not at the moment", "no thanks", "not for me", "already have", "we are all set", "not looking"],
+      "next_move": "{what you say to somebody who has said no - short, no argument, leaves the door open}",
+      "never": [
+        "Never ask why not.",
+        "Never send a second version of the same offer."
+      ],
+      "forward": [
+        { "on": "they say come back later", "then": "make a note of the month they said" }
+      ]
+    },
+    {
+      "id": "R3",
+      "label": "A pleasantry, and nothing else",
+      "color": "#2b6cb0",
+      "read": "'Thanks for connecting!' or 'Great to be connected.' It reads like a reply and it answers nothing. 350 of 812 people landed here and six messages have ever been written for them. This is the biggest unworked group there is.",
+      "patterns": ["thanks for connecting", "thanks for the connect", "great to connect", "good to connect", "nice to connect", "pleasure to connect", "thanks for reaching out"],
+      "next_move": "{what you say to somebody who was only being polite - one question they can answer in a sentence, about them and not about you}",
+      "never": [
+        "Never treat this as a yes.",
+        "Never send the same opener again in different words."
+      ],
+      "forward": [
+        { "on": "they answer the question", "then": "route to R1" },
+        { "on": "silence", "then": "route to R0" }
+      ]
+    },
+    {
+      "id": "R0",
+      "label": "No reply at all",
+      "color": "#718096",
+      "entry_timeout_days": 4,
+      "read": "Four days and nothing. 309 of 812 people are standing here and NOT ONE message has ever gone out to them. That is the finding worth taking from this whole sequence: the largest group is the one nobody writes for, because it feels like a failure rather than a step.",
+      "patterns": [],
+      "next_move": "{what you say to somebody who never replied - assume they never saw it, do not mention that they did not answer}",
+      "never": [
+        "Never say 'just bumping this' or 'did you see my message'.",
+        "Never send a third one. Two is the whole ladder."
+      ],
+      "forward": [
+        { "on": "they reply this time", "then": "route to R1" },
+        { "on": "silence", "then": "stop here, and leave them alone" }
+      ]
+    }
+  ]
+}

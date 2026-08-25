@@ -80,6 +80,7 @@ export const api = {
   flowsStats: (id) => get(`/flows/stats?version_id=${id}`),
   flowsPreview: (patterns, limit = 50) => post("/flows/classify-preview", { patterns, limit }),
   flowsImport: (body) => post("/flows/import", body),
+  flowsStartFromShape: () => post("/flows/start-from-shape", {}),
   flowsExport: (id) => get(`/flows/versions/${id}/export`),
   flowsMarkBooked: (leadId, at) => post(`/flows/leads/${leadId}/mark-booked`, { at }),
   flowsReactivateQueue: (limit = 100) => get(`/flows/reactivate-queue?limit=${limit}`),
