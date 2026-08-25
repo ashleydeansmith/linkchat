@@ -101,6 +101,73 @@ def _row_name(text: str) -> str:
 
 # --- browser-driving helpers (read-only) --------------------------------------------
 
+_PROFILE_LINKS_JS = r"""() => {
+  const out = [];
+  document.querySelectorAll('a[href*="/in/"]').forEach(a => {
+    out.push({href: a.getAttribute('href') || '',
+              text: (a.innerText || '').replace(/\s+/g, ' ').trim()});
+  });
+  return out;
+}"""
+
+
+def _canon_profile(href: str) -> str:
+    """A profile link with the tracking and the trailing slash taken off."""
+    h = (href or "").split("?")[0].rstrip("/")
+    if h.startswith("/"):
+        h = "https://www.linkedin.com" + h
+    return h
+
+
+def thread_profile_url(page, name: str | None) -> str | None:
+    """The OTHER person's profile link, read off the thread that is open.
+
+    Why this is worth doing: without it the only thing LinkChat knows about a
+    person is the name on the row, and a name is a weak key - two people share
+    one, and a CRM keyed on a name cannot tell them apart. The profile link is
+    the durable one, and it is what makes the CRM able to say "this event was
+    about THAT person" instead of recording it against nobody.
+
+    Why it is read off the page rather than asked for: an open thread shows
+    both people, so the link is there for a person to see, and reading what is
+    on the page is how the rest of this file works. The other way - calling
+    LinkedIn's own internal interface - was deliberately taken out of LinkChat
+    and is not coming back in through a side door.
+
+    BOTH people are linked on an open thread, so the match is on the name we
+    already hold. No name, or no link carrying it, returns None: a wrong
+    profile link is worse than none, because it would file this conversation
+    under somebody else.
+    """
+    if not name:
+        return None
+    try:
+        links = page.evaluate(_PROFILE_LINKS_JS) or []
+    except Exception:
+        return None
+
+    want = re.sub(r"[^a-z ]", "", str(name).lower()).strip()
+    if not want:
+        return None
+    first = want.split()[0]
+
+    best = None
+    for l in links:
+        href, text = l.get("href") or "", l.get("text") or ""
+        if "/in/" not in href:
+            continue
+        got = re.sub(r"[^a-z ]", "", text.lower()).strip()
+        if not got:
+            continue
+        if got.startswith(want) or want in got:
+            return _canon_profile(href)        # full name: the strongest match
+        # "View Shabina's profile" - the first name, which is still theirs and
+        # never the signed-in person's unless they share a first name.
+        if best is None and first and re.search(r"\b%s\b" % re.escape(first), got):
+            best = _canon_profile(href)
+    return best
+
+
 def keeper_running() -> bool:
     """True iff the shared keeper's CDP endpoint is answering. No spawn, no drive."""
     try:

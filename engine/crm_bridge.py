@@ -528,6 +528,87 @@ class Bridge:
         os.replace(tmp, target)      # never open the real file for writing
         return target
 
+    # -------------------------------------------------------------- people
+    #
+    # THE CRM HAS TO KNOW WHO IT IS TALKING ABOUT.
+    #
+    # Before 2026-08-25 a message could go out and the event log would record
+    # `"person": null` — because your identity resolver only ever LOOKS UP a
+    # person, deliberately, and there was nothing in LinkChat that ever created
+    # one. So the log said "something was sent to a name nobody can identify",
+    # and none of the reading that hangs off the log — their history, when you
+    # last spoke, how many times — could find them at all.
+    #
+    # A record is only made for somebody you have actually MESSAGED. Reading an
+    # inbox is not engaging with a person, and a sync that quietly wrote a
+    # hundred notes into your CRM would be LinkChat keeping records, which is
+    # the one thing it is not for.
+
+    def ensure_person(self, name, identifier=None):
+        """Make sure your CRM has a record for this person. Returns (id, created).
+
+        Never touches a note that already exists. If the resolver cannot place
+        them AND a file of that name is already there, nothing is written and
+        (None, False) comes back — a file that is already there is somebody's
+        work, and guessing that it is the same person is the kind of merge that
+        is silent and permanent.
+        """
+        identity = self.parts.get("identity")
+        paths = self.parts.get("crm_paths")
+        if identity is None or paths is None:
+            return None, False
+
+        try:
+            pid = identity.resolve(identifier, name)
+        except Exception:
+            pid = None
+        if pid:
+            return pid, False
+
+        clean = " ".join(str(name or "").split())
+        if not clean:
+            return None, False
+        safe = "".join(c for c in clean if c.isalnum() or c in " -_'.").strip()
+        if not safe:
+            return None, False
+
+        try:
+            folder = Path(paths.people_dir())
+            folder.mkdir(parents=True, exist_ok=True)
+            target = folder / ("%s.md" % safe)
+            if target.exists():
+                return None, False       # somebody's note. Leave it alone.
+
+            from datetime import date
+            link = str(identifier or "").strip()
+            head = ["---", "name: %s" % clean, "type: prospect",
+                    "date: %s" % date.today().isoformat(), "tags: [crm, linkchat]"]
+            if link.startswith("http") and "/in/" in link:
+                head.append("linkedin-url: %s" % link)
+            head += ["---", "",
+                     "Created by LinkChat on the first message you sent this person, so "
+                     "the event log has somebody to record it against.", ""]
+            body = "\n".join(head)
+
+            tmp = target.with_suffix(".md.tmp")
+            tmp.write_text(body, encoding="utf-8", newline="\n")
+            os.replace(tmp, target)      # never open the real file for writing
+        except Exception:
+            return None, False
+
+        # The resolver keeps its index in memory, so a note written a moment ago
+        # is invisible to it until it is told to look again. Without this the
+        # person would be created and the very next line would still record the
+        # event against nobody.
+        try:
+            identity.forget()
+        except Exception:
+            pass
+        try:
+            return identity.resolve(identifier, name), True
+        except Exception:
+            return None, True
+
     def would_stage(self, message):
         """Run the checks and report, without writing anything. For the screen."""
         gate = self.parts.get("sendgate")

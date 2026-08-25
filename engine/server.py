@@ -239,6 +239,48 @@ class ReplyBody(BaseModel):
     body: str
 
 
+class SuggestedBody(BaseModel):
+    conv_id: int                     # the conversation, as Conversations numbers them
+    body: str                        # the agreed message, as the sequence resolved it
+    branch: str | None = None        # which way back it matched, for the record
+    arm: str | None = None           # which of the agreed messages, for the record
+
+
+def _mark_outbox_sent(path, confirmed):
+    """Correct the `sent:` line on an outbox record after the message has gone.
+
+    Rewrites ONLY that line, and only inside the header at the top. Temp file
+    then replace, so a crash mid-write can never leave the record truncated -
+    the record of what you sent is the last thing that should be losable.
+    """
+    import os
+    if not path or not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    lines = text.split("\n")
+    out, in_head, done = [], False, False
+    for i, line in enumerate(lines):
+        if i == 0 and line.strip() == "---":
+            in_head = True
+            out.append(line)
+            continue
+        if in_head and line.strip() == "---":
+            in_head = False
+            out.append(line)
+            continue
+        if in_head and not done and line.startswith("sent:"):
+            out.append("sent: true")
+            out.append("confirmed-by-linkedin: %s" % ("true" if confirmed else "false"))
+            done = True
+            continue
+        out.append(line)
+    if not done:
+        return                      # no such line: leave the record alone
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text("\n".join(out), encoding="utf-8", newline="\n")
+    os.replace(tmp, path)
+
+
 def _carry(bridge, *, to, identifier, body, thread_urn, kind="message",
            written_by, item_id=None):
     """The one road out. Every message that reaches a person comes through here.
@@ -350,8 +392,44 @@ def _carry(bridge, *, to, identifier, body, thread_urn, kind="message",
     # reached your outbox is a file on your own computer and is counted as
     # nothing, because counting an intention spends an allowance that was never
     # used, and the next run behaves as though it was.
+    # THE RECORD HAS TO SAY WHAT ACTUALLY HAPPENED.
+    #
+    # The copy in your outbox is written BEFORE the message is carried, which is
+    # right - a send that fails must never lose the words. But it was never
+    # written again afterwards, so its header said `sent: false` for every
+    # message that went, including the ones LinkedIn confirmed. A member reading
+    # their outbox would have concluded that nothing had gone out at all.
+    #
+    # Only the one line is touched, through a temp file and a replace, and any
+    # failure here is swallowed: the message has already gone, and a book-keeping
+    # slip must never be reported as a send failure.
+    if sent.get("sent"):
+        try:
+            _mark_outbox_sent(Path(str(staged)), sent.get("confirmed"))
+        except Exception:
+            pass
+
+    # WHO IT WAS. Ask the CRM to place this person - and to make a record for
+    # them if it has none - BEFORE the event is written, so the log has somebody
+    # to record it against. Until 2026-08-25 every event LinkChat wrote carried
+    # `"person": null`, because nothing ever created a person and the resolver
+    # only ever looks one up.
+    #
+    # Best effort on purpose: a message that has already gone must never be lost
+    # to a book-keeping failure, so a CRM that cannot do this still gets the
+    # event, exactly as before.
+    created = False
+    try:
+        _pid, created = bridge.ensure_person(to, identifier)
+    except Exception:
+        pass
+
+    # Both the link and the name go in. The resolver takes the strongest key it
+    # is given, and passing only one of them is how an event ends up recorded
+    # against nobody when the other is the one the CRM happens to know.
     bridge.log("message_sent" if sent.get("sent") else "message_staged",
-               identifier, payload={"item_id": item_id or ""})
+               identifier, to, payload={"item_id": item_id or "",
+                                        "person_created": bool(created)})
     if sent.get("sent"):
         bridge.did_act("message", to)
 
@@ -371,6 +449,95 @@ def crm_approve(body: ApproveBody) -> dict:
     return _carry(bridge, to=body.to, identifier=body.identifier, body=body.body,
                   thread_urn=body.thread_urn, kind=body.kind,
                   written_by=bridge.AUTHOR, item_id=body.item_id)
+
+
+@app.post("/api/crm/approve-suggested")
+def crm_approve_suggested(body: SuggestedBody) -> dict:
+    """A message the SEQUENCE wrote, and you releasing it.
+
+    THIS IS THE DOOR THAT WAS MISSING, and its absence quietly took the sixth
+    check out of the program. The design is that a sequence writes a message and
+    cannot release its own work - somebody else has to. That check lives in your
+    CRM and it works. Nothing ever reached it, because nothing in LinkChat ever
+    wrote a message down as the sequence's: `propose` was never called from
+    anywhere, so the only way to send was the door for words you typed
+    yourself, and every message the sequence wrote went out recorded as yours.
+
+    Three hands, in order, on one press of yours:
+      the sequence writes it down   propose(author = the sequence)
+      you release it                approve(reviewer = you)      <- the sixth check
+      it goes                       the same five checks as everything else
+
+    Your press is the release. That is the point of the rule - not that a person
+    must retype what a machine wrote, but that a machine must not decide
+    somebody should hear from you.
+    """
+    bridge = crm(required=True)
+    text = (body.body or "").strip()
+    if not text:
+        raise HTTPException(422, "there is nothing written to send")
+
+    from .inbox import db as cvdb
+    cx = cvdb.connect()
+    try:
+        row = cx.execute("SELECT thread_urn, participant_name, participant_profile_url "
+                         "FROM conversations WHERE id = ?", (body.conv_id,)).fetchone()
+    except Exception:
+        row = None
+    finally:
+        try:
+            cx.close()
+        except Exception:
+            pass
+    if row is None:
+        raise HTTPException(404, "there is no conversation with that number")
+    urn = row["thread_urn"] or ""
+    if not urn:
+        raise HTTPException(
+            409, "this conversation has no address on LinkedIn yet - sync your "
+                 "inbox and it will get one")
+    name = row["participant_name"] or ""
+    identifier = (row["participant_profile_url"] or "") or name
+
+    # FILL IN THE PERSON'S NAME.
+    #
+    # The agreed messages are written with {name} in them - "Good connecting
+    # with you {name}" - and nothing in LinkChat ever filled it. Check three
+    # refuses any message with a gap left in it, quite rightly, so three of the
+    # seven suggestions on a real inbox could never be sent at all: the branch
+    # matched, the words were there, and pressing approve returned a refusal.
+    #
+    # Only the name is filled, and only from the name on the conversation. Any
+    # other gap - {their build}, {their work} - is LEFT IN, and check three then
+    # stops the message. That is the right way round: a gap only a person can
+    # fill should stop the send, not be quietly guessed at.
+    from . import names as _names
+    first = _names.first_name_of(name) or ""
+    if first:
+        for token in ("{name}", "{first_name}", "{firstname}"):
+            text = text.replace(token, first)
+
+    # A stable name for this piece of work: the same message to the same person
+    # is the same item, so pressing twice cannot make two of them.
+    import hashlib
+    stamp = hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]
+    item_id = "linkchat-%s-%s" % (body.conv_id, stamp)
+    summary = " ".join(text.split())[:80]
+    if body.branch:
+        summary = "%s: %s" % (body.branch, summary)
+
+    try:
+        bridge.propose(item_id, text, summary=summary, to=name,
+                       identifier=identifier, thread_urn=urn)
+    except crm_bridge.NotAllowed as exc:
+        raise HTTPException(409, str(exc))
+
+    # written_by is the SEQUENCE, and item_id makes _carry ask your review step
+    # to release it before anything is staged. Both are what make the record
+    # true: a message the machine wrote, that you let go.
+    return _carry(bridge, to=name, identifier=identifier, body=text,
+                  thread_urn=urn, kind="reply",
+                  written_by=bridge.AUTHOR, item_id=item_id)
 
 
 @app.post("/api/crm/reply")

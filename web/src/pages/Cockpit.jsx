@@ -20,6 +20,10 @@ export default function Cockpit() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [done, setDone] = useState([]);
+  // Conversations waiting on a reply that the sequence HAS an agreed message for.
+  // Until 2026-08-25 nothing on any screen read this, so the sequence's work was
+  // resolved by the engine and shown to nobody.
+  const [suggested, setSuggested] = useState([]);
 
   const load = useCallback(async () => {
     try {
@@ -33,6 +37,17 @@ export default function Cockpit() {
     } finally {
       setLoading(false);
     }
+    try {
+      const q = await fetch("/api/inbox/review-queue?limit=40");
+      if (q.ok) {
+        const d = await q.json();
+        // Only the ones with an agreed message. A conversation the sequence has
+        // no words for is not a decision waiting on you - it is a gap in the
+        // patterns, and putting it here as an empty card would say otherwise.
+        setSuggested((d.queue || []).filter(
+          (it) => it.branch && (it.gives || []).some((g) => (g.bubbles || []).length)));
+      }
+    } catch { /* the queue is a nicety; what is already waiting still shows */ }
   }, []);
 
   useEffect(() => {
@@ -61,6 +76,34 @@ export default function Cockpit() {
       if (!r.ok) { setError(d.detail || "that could not be approved"); return; }
       setDone((prev) => [{ id: item.id, to: item.to, where: d.staged,
                            sent: d.sent, why: d.why }, ...prev]);
+      await load();
+    } catch (e) {
+      setError(String(e.message || e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // One press, three hands: the sequence writes it down, you release it, it goes.
+  // The record ends up saying a sequence wrote it and you let it go, which is the
+  // truth. Sending it as though you had typed it would not be.
+  const approveSuggested = async (item, bubbles) => {
+    const key = "s" + item.conv_id;
+    setBusyId(key);
+    setError("");
+    try {
+      for (const b of bubbles) {
+        const r = await fetch("/api/crm/approve-suggested", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conv_id: item.conv_id, body: b,
+                                 branch: item.branch, arm: item.arm || null }),
+        });
+        const d = await r.json();
+        if (!r.ok) { setError(d.detail || "that could not be sent"); return; }
+        setDone((prev) => [{ id: key + b.slice(0, 8), to: item.participant_name,
+                             where: d.staged, sent: d.sent, why: d.why }, ...prev]);
+      }
       await load();
     } catch (e) {
       setError(String(e.message || e));
@@ -111,6 +154,54 @@ export default function Cockpit() {
           ))}
         </div>
       )}
+
+      {suggested.length > 0 ? (
+        <div className="ck-suggested">
+          <div className="ck-done-head">
+            Replies your sequence has words for ({suggested.length})
+          </div>
+          <div className="ck-intro">
+            Each of these is somebody waiting on a reply whose message matched one of
+            your branches. The words are the ones you agreed for that branch — nothing
+            here was written just now. Read it against what they actually said before
+            you let it go.
+          </div>
+          <div className="ck-list">
+            {suggested.map((item) => {
+              const g = (item.gives || []).find((x) => (x.bubbles || []).length);
+              const bubbles = (g && g.bubbles) || [];
+              const key = "s" + item.conv_id;
+              return (
+                <div className="ck-card" key={key}>
+                  <div className="ck-to">
+                    {item.participant_name || "Someone in your inbox"}
+                    <span className="ck-branch"> · {item.branch} {item.label || ""}</span>
+                  </div>
+                  <div className="ck-their-last">
+                    They said: {item.their_last || "(nothing stored yet)"}
+                  </div>
+                  <div className="ck-body">
+                    {bubbles.map((b, i) => <div key={i} className="ck-bubble">{b}</div>)}
+                  </div>
+                  <div className="ck-foot">
+                    <span className="ck-by">
+                      written by your sequence · {bubbles.length} message
+                      {bubbles.length === 1 ? "" : "s"}
+                    </span>
+                    <button
+                      className="ck-approve"
+                      disabled={busyId === key}
+                      onClick={() => approveSuggested(item, bubbles)}
+                    >
+                      {busyId === key ? "Sending…" : "Approve and send"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {done.length > 0 ? (
         <div className="ck-done">

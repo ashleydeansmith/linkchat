@@ -223,9 +223,16 @@ def sync(max_deep: int = 20, max_stagnant: int = 4) -> None:
                 avatar = K.row_avatar(target) or None
                 urn, msgs = K.open_listitem(page, target)
                 if urn:
+                    # The thread is open right here, so this is the one moment
+                    # the other person's profile link is on the screen. Without
+                    # it the CRM only ever learns a name, and a name is a weak
+                    # key - the event log then records "sent to a name nobody
+                    # can identify" rather than to a person.
+                    purl = K.thread_profile_url(page, tname)
                     cid = db.upsert_conversation(
                         cx, thread_urn=urn, name=tname, preview=tprev,
-                        last_dir=last_dir, list_hash=sig, avatar=avatar)
+                        last_dir=last_dir, list_hash=sig, avatar=avatar,
+                        profile_url=purl)
                     db.replace_messages(cx, cid, msgs)
                     known[tname] = sig
                     opened += 1

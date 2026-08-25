@@ -2,7 +2,7 @@
 
     python tests/run_all.py
 
-Eight checks run, in the order a fault would matter:
+Nine checks run, in the order a fault would matter:
 
   installs      does this work on a computer that is not the one it was built on
   names         does anybody's LinkedIn name field get typed back at them
@@ -11,6 +11,7 @@ Eight checks run, in the order a fault would matter:
   agreement     does every control on a screen reach a door the engine has
   names again   does a conversation carry a person's name, or a timestamp
   round trip    does a flow still have its messages after a trip through a file
+  the CRM       does it learn who a message went to, and whose hand let it go
   the walk      does every door answer with a sentence rather than a crash
 
 The first three read the code. The last one starts the engine and presses every
@@ -38,6 +39,7 @@ RUNS = [
     ("the screens and the engine agree", "test_screens_and_engine_agree.py"),
     ("a conversation name is a name", "test_inbox_row_names.py"),
     ("a flow keeps its messages", "test_flow_round_trip.py"),
+    ("the CRM gets updated", "test_crm_gets_updated.py"),
     ("the walk", "walk.py"),
 ]
 
