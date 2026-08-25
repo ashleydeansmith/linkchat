@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar.jsx";
+import LiveBar from "./components/LiveBar.jsx";
 import Inbox from "./pages/Inbox.jsx";
 import Flows from "./pages/Flows.jsx";
 import Find from "./pages/Find.jsx";
@@ -53,6 +54,7 @@ export default function App() {
         onOpenSetup={() => setShowSetup(true)}
       />
       <main className="main">
+        <LiveBar />
         <Banner crm={crm} />
         {route === "inbox" ? <Inbox /> : route === "find" ? <Find /> : <Flows />}
       </main>

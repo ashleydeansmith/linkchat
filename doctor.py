@@ -258,7 +258,17 @@ def main():
     py_ok = which_python()
     parts_ok = which_parts()
     browser_ok = which_browser()
-    which_crm()
+    crm_ok = which_crm()
+
+    # Pointing it at a CRM is a step of the setup, not an extra. Without this
+    # the last section read "Nothing. LinkChat is installed on this computer."
+    # while section 5 said no CRM had been chosen - so somebody would take that
+    # as finished, open it, and be asked for a folder nobody had mentioned.
+    if parts_ok and browser_ok and not crm_ok:
+        next_steps.append(
+            "LinkChat is installed but not pointed at your CRM yet. Open it and "
+            "give it the folder with _engine and People inside it - the one you "
+            "built in Sessions 0 to 2.")
 
     head("What to do next")
     if next_steps:
@@ -276,8 +286,8 @@ def main():
             say()
             say("  CLAUDE.md in this folder tells Claude what it may change and")
             say("  what it must never touch. Send Ashley what Claude changed.")
-    elif py_ok and parts_ok and browser_ok:
-        say("  Nothing. LinkChat is installed on this computer.")
+    elif py_ok and parts_ok and browser_ok and crm_ok:
+        say("  Nothing. LinkChat is installed and pointed at your CRM.")
         say()
         say("  Open it with the LinkChat icon on your desktop, or type:")
         say("      python -m engine desktop")

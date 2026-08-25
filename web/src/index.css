@@ -278,3 +278,24 @@ tbody tr.sel td, tbody tr:hover td { background: var(--primary-soft); }
   background:var(--bg,#f6f7f9); border:1px solid var(--line,#e5e7eb);
   color:var(--muted,#4b5563);
 }
+
+/* ---- LiveBar: what LinkChat is doing right now, on every screen ---- */
+.livebar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px;
+  padding: 7px 14px; font-size: 12.5px;
+  background: var(--c-low, #f6f7f9);
+  border-bottom: 1px solid var(--line, #e5e7eb);
+  color: var(--ink, #111827);
+}
+.livebar.livebar-warn { background: #FDECEC; border-bottom-color: #F3B0B0; }
+.lb-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.lb-sep { color: var(--muted, #9ca3af); padding: 0 2px; }
+.lb-muted { color: var(--muted, #6b7280); }
+.lb-waiting { color: var(--primary, #2563eb); font-weight: 600; }
+.lb-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.lb-green { background: #22a06b; }
+.lb-amber { background: #d98a00; }
+.lb-red   { background: #d64545; }
+.lb-grey  { background: #b0b6be; }
+.lb-pulse { animation: lb-blink 1.1s ease-in-out infinite; }
+@keyframes lb-blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }

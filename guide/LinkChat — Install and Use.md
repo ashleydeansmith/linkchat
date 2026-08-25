@@ -147,17 +147,22 @@ Press **Use this CRM**.
 
 ## Step 5 — Sign into LinkedIn, once
 
-At the top of the window there is a line reading **LinkedIn browser — stopped**, with a
-**Start browser** button next to it.
+**There is no button that starts the browser, and you do not need one.** The browser
+opens by itself the first time something needs it, which is when you press **Sync** on
+the Conversations screen.
 
-Press **Start browser**. A Chromium browser window opens — an ordinary browser, on your
-own computer. Sign into LinkedIn in it exactly as you normally would, including any code
-it texts you.
+So: open **Conversations** and press **Sync**. A browser window opens — an ordinary
+browser, on your own computer. Sign into LinkedIn in it exactly as you normally would,
+including any code it texts you.
 
 **Give it up to two minutes to settle after you have signed in**, and leave that browser
-window open while you finish signing in. The line at the top of LinkChat changes to
-**LinkedIn browser — running** when it is ready. Once it says running you can close the
-browser window; it remembers you on this computer and you are not asked again.
+window open while you finish. The line across the top of LinkChat reads **LinkedIn
+browser: not started** until it is up, and **LinkedIn browser: running** once it is.
+When it says running, press **Sync** once more — the first press was what opened the
+browser, and this is the one that reads your inbox.
+
+Once it says running you can close the browser window. It remembers you on this
+computer and you are not asked again.
 
 Your password is typed into LinkedIn's own page in a normal browser. LinkChat never sees
 it, never stores it, and never asks you for it.
@@ -369,9 +374,10 @@ answer. Send Ashley that message.
 Run the installer again — `setup.cmd` on Windows, `setup-mac.command` on a Mac. It is
 safe to run as many times as you like.
 
-**Sync finds nothing, or the browser line stays on "stopped".**
-Press **Start browser**, sign into LinkedIn in the window that opens, and wait for the
-line to read **running** before pressing Sync.
+**Sync finds nothing, or the top line stays on "LinkedIn browser: not started".**
+Press **Sync** — that is what opens the browser. Sign into LinkedIn in the window that
+appears, wait for the top line to read **LinkedIn browser: running**, then press **Sync**
+again. The first press opens the browser; the second one reads your inbox.
 
 **It is asking for my CRM folder again.**
 It is pointed somewhere that no longer has `_engine` and `People` inside it. Give it the
