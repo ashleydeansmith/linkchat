@@ -181,30 +181,56 @@ def main() -> int:
     # Explicit rather than clever. A regex over bold text missed the real one
     # ("**Press Start browser**" bolds the verb too), and a check that cannot
     # see the fault it was written for is worse than no check.
-    # Only what a member can actually SEE counts as rendered. An orphaned file
-    # still contains its own button text, so counting it here would let the
-    # guide describe a control nobody can reach and call it present - which is
-    # the exact fault, passing itself.
-    rendered = ""
+    # The guide says "press **X**". X has to be a real button, spelled the way
+    # the button is spelled.
+    #
+    # This used to search the whole screen source for the word, which passes on
+    # any stray mention: "Activate" appeared in a comment and in a message, so
+    # the guide could say press **Activate** while the button actually read
+    # "Start using this one" and nothing noticed. Checking against the real
+    # button TEXT is the only version of this check that works. Orphaned files
+    # are excluded - they carry their own button text and would vouch for
+    # controls nobody can reach, which is the fault vouching for itself.
+    button_text: set[str] = set()
     for p in list(WEB.rglob("*.jsx")):
         if p.name in orphans:
             continue
-        rendered += p.read_text(encoding="utf-8")
-    # Labels a guide might tell somebody to press. Add to this when a screen
-    # gains a control worth naming in writing.
-    CONTROLS = ["Start browser", "Sync", "Activate", "Import",
-                "Start from the shape", "Start from nothing"]
+        body = p.read_text(encoding="utf-8")
+        for raw in re.findall(r"<button\b[^>]*>(.*?)</button>", body, re.S):
+            # A label is often inside an expression rather than beside it:
+            #   {sync.running ? "Syncing…" : "↻ Sync inbox"}
+            # Dropping expressions wholesale threw those away, and the guide
+            # could then name a real button and be told it did not exist.
+            # So: take the quoted strings out of the expression FIRST, then
+            # take the plain text around it.
+            for lit in re.findall(r'"([^"\n]{2,40})"|\'([^\'\n]{2,40})\'', raw):
+                s = (lit[0] or lit[1]).strip()
+                if s and not s.startswith(("http", "/", "#")) and " " in s or (
+                        s and s.isalpha()):
+                    button_text.add(s)
+            txt = re.sub(r"\{[^{}]*\}", " ", raw)
+            txt = re.sub(r"<[^>]*>", " ", txt)
+            txt = " ".join(txt.split())
+            if txt:
+                button_text.add(txt)
+
+    check("the screens have buttons to compare the guide against",
+          len(button_text) >= 5,
+          "only found %d button labels, so this check would pass on anything"
+          % len(button_text))
+
     guides = list((ROOT / "guide").glob("*.md"))
     named_but_absent = []
     for g in guides:
         text = g.read_text(encoding="utf-8", errors="replace")
-        for label in CONTROLS:
-            if label in text and label not in rendered:
+        for label in re.findall(r"press \*\*([^*]{2,40})\*\*", text, re.I):
+            label = label.strip()
+            if not any(label.lower() in b.lower() for b in button_text):
                 named_but_absent.append(
-                    "%s names '%s' and no screen renders it" % (g.name, label))
+                    "%s says press '%s' and no button reads that" % (g.name, label))
     check("the guide never tells a member to press a control that is not there",
           not named_but_absent,
-          "\n".join(named_but_absent))
+          "\n".join(sorted(set(named_but_absent))))
 
     print()
     if failures:

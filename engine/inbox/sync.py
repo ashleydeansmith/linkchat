@@ -172,7 +172,15 @@ def sync(max_deep: int = 20, max_stagnant: int = 4) -> None:
     opened = skipped = no_urn = 0
     stop_reason = None                     # set by the budget break; else derived post-loop
     try:
-        with K.drive(spawn=False) as (page, msg):
+        # spawn=True: reading the inbox is the job that OPENS the browser.
+        #
+        # This is the only place in LinkChat that opens one, on purpose. It is
+        # the first thing a member does, it is a read rather than a send, and
+        # it is where the sign-in has to happen. Everything else - opening a
+        # conversation, and the send path - still attaches to the browser this
+        # opened and refuses when there is not one, so no message can quietly
+        # start a browser on its own.
+        with K.drive(spawn=True) as (page, msg):
             if page is None:
                 return _emit({"ok": False, "msg": msg})
             ok, detail = K.selftest(page)

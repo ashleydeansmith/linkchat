@@ -25,6 +25,17 @@ INBOX_URL = "https://www.linkedin.com/messaging/"
 _THREAD_RE = re.compile(r"/messaging/thread/([^/?#]+)")
 _MONTH = re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b")
 
+# LinkedIn stamps a conversation from TODAY with a clock time and an older one
+# with a month. Only the month was looked for, so every conversation from today
+# fell past it to a blunt 40-character cut and kept its timestamp and the start
+# of the message inside the person's name: "Malcom Ovwighose 10:42 AM 10:42 AM
+# You:". Found 2026-08-25 on a real inbox - eleven of twelve rows were from
+# today, so eleven of twelve names were wrong. It had gone unseen because a
+# reply older than today parses correctly.
+_TIME = re.compile(r"\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b")
+# Some rows carry neither, and lead with a relative age instead.
+_AGO = re.compile(r"\b\d+\s*(?:m|h|d|w|mo|y)\b|\byesterday\b", re.I)
+
 # --- vendored DOM selectors (source of truth: linkforge/inbox.py) -------------------
 
 # List rows. Per row capture: the thread URN (from the row's thread anchor href when
@@ -67,10 +78,25 @@ def _row_pending(text: str) -> bool:
 
 
 def _row_name(text: str) -> str:
-    """Participant name = text before the first date token (after the status prefix)."""
+    """Participant name = the text before whatever stamps the row with a time.
+
+    A row reads "<name> <when> <who said it>: <preview>". Cut at the earliest of
+    the three ways LinkedIn writes <when> - a month for anything older, a clock
+    time for today, a relative age on some rows - rather than at a month alone,
+    which left every conversation from today carrying its timestamp inside the
+    person's name.
+
+    The 40-character fallback stays for a row that carries none of them, but it
+    is now the rare case rather than the everyday one.
+    """
     t = re.sub(r"^Status is (online|reachable)\s*", "", text)
-    m = _MONTH.search(t)
-    return (t[:m.start()] if m else t[:40]).strip()
+    cuts = [m.start() for m in (_MONTH.search(t), _TIME.search(t), _AGO.search(t))
+            if m]
+    if cuts:
+        return t[:min(cuts)].strip()
+    # No stamp at all: fall back, but never mid-word and never past a preview.
+    head = t.split(":")[0] if ":" in t[:60] else t
+    return head[:40].strip()
 
 
 # --- browser-driving helpers (read-only) --------------------------------------------
@@ -439,9 +465,20 @@ def drive(wait_sec: int = 300, spawn: bool = False, action: str = "scrape"):
             # `why` already carries the count, so it is not re-appended.
             yield None, why
             return
-    if not spawn and not B.keeper_running():
-        yield None, "your LinkedIn browser is not open yet - open it and sign in first"
-        return
+    if not B.keeper_running():
+        if not spawn:
+            yield None, "your LinkedIn browser is not open yet - open it and sign in first"
+            return
+        # spawn=True means THIS job is allowed to open the browser, and until
+        # 2026-08-25 it only skipped the refusal above - it never started one,
+        # so the connect below failed a moment later with something less
+        # readable. Nothing in LinkChat called ensure_keeper at all, which is
+        # why pressing Sync said "open it and sign in first" and no screen,
+        # button or command could open it.
+        if B.ensure_keeper() is None:
+            yield None, ("LinkChat could not open your LinkedIn browser. Try Sync "
+                         "inbox again; if it keeps happening send Ashley this line.")
+            return
 
     # Take the SAME lock Gather takes, out of your own CRM.
     #

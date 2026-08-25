@@ -148,18 +148,18 @@ Press **Use this CRM**.
 ## Step 5 — Sign into LinkedIn, once
 
 **There is no button that starts the browser, and you do not need one.** The browser
-opens by itself the first time something needs it, which is when you press **Sync** on
+opens by itself the first time something needs it, which is when you press **Sync inbox** on
 the Conversations screen.
 
-So: open **Conversations** and press **Sync**. A browser window opens — an ordinary
+So: open **Conversations** and press **Sync inbox**. A browser window opens — an ordinary
 browser, on your own computer. Sign into LinkedIn in it exactly as you normally would,
 including any code it texts you.
 
 **Give it up to two minutes to settle after you have signed in**, and leave that browser
 window open while you finish. The line across the top of LinkChat reads **LinkedIn
 browser: not started** until it is up, and **LinkedIn browser: running** once it is.
-When it says running, press **Sync** once more — the first press was what opened the
-browser, and this is the one that reads your inbox.
+When it says running, press **Sync inbox** once more. The first press is what opened the
+browser; this is the one that reads your inbox.
 
 Once it says running you can close the browser window. It remembers you on this
 computer and you are not asked again.
@@ -172,7 +172,7 @@ it, never stores it, and never asks you for it.
 ## The three screens
 
 **Conversations.** Every LinkedIn conversation you have, read into one list. Press
-**Sync** to go and read your inbox again; that opens pages and reads them, which takes a
+**Sync inbox** to go and read your inbox again; that opens pages and reads them, which takes a
 while on a large inbox, and it only ever reads. You can reply to anybody here in your own
 words.
 
@@ -232,7 +232,7 @@ Open **Sequences**. Because you have not built one yet, the screen offers two bu
 - **Start from nothing** — an empty canvas, if you would rather.
 
 Press **Start from the shape**. It arrives as a draft, and a draft changes nothing until
-you press **Activate**, so you can open it, read it and change your mind with nothing at
+you press **Start using this one**, so you can open it, read it and change your mind with nothing at
 stake.
 
 ### What you get
@@ -275,7 +275,7 @@ carefully. There are five gaps. Fill all five and the sequence runs.
 2. Delete everything between the curly brackets, **and the brackets too**.
 3. Write what you would actually say. One or two sentences.
 4. Do the same for the other four.
-5. Press **Activate**.
+5. Press **Start using this one**.
 
 Under each branch there is a short note headed **never** — two lines saying what not to do
 in that particular reply. They are notes to yourself. Nothing sends them and nothing
@@ -375,8 +375,8 @@ Run the installer again — `setup.cmd` on Windows, `setup-mac.command` on a Mac
 safe to run as many times as you like.
 
 **Sync finds nothing, or the top line stays on "LinkedIn browser: not started".**
-Press **Sync** — that is what opens the browser. Sign into LinkedIn in the window that
-appears, wait for the top line to read **LinkedIn browser: running**, then press **Sync**
+Press **Sync inbox** — that is what opens the browser. Sign into LinkedIn in the window that
+appears, wait for the top line to read **LinkedIn browser: running**, then press **Sync inbox**
 again. The first press opens the browser; the second one reads your inbox.
 
 **It is asking for my CRM folder again.**

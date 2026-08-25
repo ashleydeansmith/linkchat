@@ -485,8 +485,22 @@ def review_queue(limit: int = 50, days: int = 21):
         # cockpit is a WORKABLE list, not the entire all-time backlog (~800+), and so the
         # folded-in reactivations are actually reachable within the limit. days<=0 = no window.
         _cut_ms = int(_t.time() * 1000) - days * 86400 * 1000 if days and days > 0 else None
+        # A conversation with NO timestamp must stay in the queue.
+        #
+        # The list the inbox is read from carries "10:42 AM" or "Aug 14", never
+        # an epoch, so last_msg_at is NULL on every row a sync writes. The
+        # window compared NULL against the cut, NULL is never >=, and the whole
+        # queue came back empty: 31 conversations, 5 of them waiting on a reply,
+        # nothing shown. Found 2026-08-25 on a real inbox.
+        #
+        # Keeping an undated row is the safe direction. This window decides what
+        # is SHOWN for a human to approve, not what may be sent - every check
+        # still runs at the send, and nothing goes without a tap. Showing a
+        # conversation that turns out to be old costs a moment; hiding one that
+        # is waiting for a reply loses the person.
         _q = ("SELECT * FROM conversations WHERE last_msg_dir='in' AND archived_at IS NULL "
-              + ("AND CAST(last_msg_at AS INTEGER) >= ? " if _cut_ms is not None else "")
+              + ("AND (last_msg_at IS NULL OR CAST(last_msg_at AS INTEGER) >= ?) "
+                 if _cut_ms is not None else "")
               + "ORDER BY last_msg_at DESC, updated_at DESC")
         _args = (_cut_ms,) if _cut_ms is not None else ()
         cx = _cx()

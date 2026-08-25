@@ -2,13 +2,15 @@
 
     python tests/run_all.py
 
-Six checks run, in the order a fault would matter:
+Eight checks run, in the order a fault would matter:
 
   installs      does this work on a computer that is not the one it was built on
   names         does anybody's LinkedIn name field get typed back at them
   the gate      can anything reach a person without clearing every check
   the starter   does the sequence members start from carry any words of its own
   agreement     does every control on a screen reach a door the engine has
+  names again   does a conversation carry a person's name, or a timestamp
+  round trip    does a flow still have its messages after a trip through a file
   the walk      does every door answer with a sentence rather than a crash
 
 The first three read the code. The last one starts the engine and presses every
@@ -34,6 +36,8 @@ RUNS = [
     ("nothing reaches a person unapproved", "test_nothing_sends_unapproved.py"),
     ("the starter is a shape, not a script", "test_starter_sequence.py"),
     ("the screens and the engine agree", "test_screens_and_engine_agree.py"),
+    ("a conversation name is a name", "test_inbox_row_names.py"),
+    ("a flow keeps its messages", "test_flow_round_trip.py"),
     ("the walk", "walk.py"),
 ]
 

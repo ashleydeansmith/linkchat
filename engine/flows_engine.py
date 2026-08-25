@@ -487,6 +487,31 @@ def export_flows_json(version_id: int) -> dict:
             then = (tgt["label"] if tgt and tgt["kind"] == "terminal"
                     else f"route to {e['to_node']}")
             fwd.append({"on": on, "then": then})
+        # THE AGREED MESSAGES. Without these the export is a shape with no words
+        # in it, and re-importing it produces a flow that can never propose
+        # anything: give_version() only counts a version that carries a 't' arm,
+        # so suggest_for_text returns nothing and the review queue shows every
+        # conversation as off-map.
+        #
+        # This was missing until 2026-08-25 and it was silent. Exporting the live
+        # v6.2 flow out of LinkForge and importing it into LinkChat reported nine
+        # branches and twenty-nine links and looked complete - and had lost all
+        # twelve locked messages. The only trace was the surviving next_move
+        # prose still telling the reader to "send templates[0]", pointing at
+        # something no longer in the file. A backup taken this way had no
+        # messages in it either.
+        templates = []
+        for a in sorted(arms_by_node.get(mkey, []),
+                        key=lambda x: (x.get("arm_key") or "")):
+            if not (a.get("arm_key") or "").startswith("t"):
+                continue          # 'a' is the guidance prose, already in next_move
+            body = (a.get("body") or "").strip()
+            if body:
+                # Kept as the bubbles it will be sent as, which is exactly what
+                # import_flows_json joins back with ' · ' - so a round trip is
+                # the same message, not a re-punctuated one.
+                templates.append([x.strip() for x in body.split(" · ") if x.strip()])
+
         b = {
             "id": n["node_key"], "label": n["label"], "color": n["color"],
             "patterns": n["patterns"], "read": n["read"],
@@ -494,6 +519,8 @@ def export_flows_json(version_id: int) -> dict:
             "never": (n["meta"] or {}).get("never", []),
             "forward": fwd,
         }
+        if templates:
+            b["templates"] = templates
         if (n["meta"] or {}).get("entry_timeout_days"):
             b["entry_timeout_days"] = n["meta"]["entry_timeout_days"]
         branches.append(b)
