@@ -20,7 +20,11 @@ it puts on your desktop.
 Needs Python 3.10 or later from python.org, with **"Add python.exe to PATH"** ticked on
 the installer's first screen.
 
-**On a Mac** you run `setup.command` instead, and Python comes from
+**Not sure which computer you are on, or how far it got?** Run `python doctor.py`
+(`python3 doctor.py` on a Mac) in this folder. It works it out and says what to do next.
+It only looks — it installs nothing and sends nothing.
+
+**On a Mac** you run `setup-mac.command` instead, and Python comes from
 https://www.python.org/downloads/macos/. **Nobody has ever run LinkChat on a Mac** — do
 the install the day before, with Ashley on a message, rather than live on the call. The
 Mac paragraph in the guide says what differs and what to do when it stops.
@@ -71,3 +75,13 @@ To see what your copy can do:
 Four checks: it installs on a computer that is not the one it was built on · nobody's
 name is typed back at them · nothing reaches a person unapproved · and the walk, which
 starts the engine, presses every door and judges the shape of the answer.
+
+---
+
+## If you use Claude Code
+
+Open it in this folder and say **"run doctor.py and fix what it finds"**. `CLAUDE.md` here
+loads on its own and tells Claude what it may change and what it must never touch — the
+checks that stop a message reaching the wrong person, your CRM records, and the tests.
+You have read access to this repository and not write access, so a fix stays on your
+machine: send Ashley the patch.

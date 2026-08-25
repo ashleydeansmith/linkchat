@@ -264,7 +264,7 @@ print("  5. Words a member should never be shown")
 print("=" * 72)
 
 BANNED = re.compile(r"\b(things?|bites?|biting)\b", re.I)
-member_visible = [ROOT / "setup.cmd", ROOT / "setup.command", ROOT / "README.md"] + guides \
+member_visible = [ROOT / "setup.cmd", ROOT / "setup-mac.command", ROOT / "README.md"] + guides \
     + sorted((ROOT / "web" / "src").rglob("*.jsx"))
 hits = []
 for p in member_visible:
@@ -319,24 +319,24 @@ else:
             # file sitting here. A shell file is refused by a Mac on its first
             # line if git rewrote its line endings on the way out, and the error
             # it gives names nothing the member can act on.
-            mac_setup = clone / "setup.command"
+            mac_setup = clone / "setup-mac.command"
             if not mac_setup.exists():
                 bad("a Mac member gets an installer they can run",
-                    "setup.command is not in the clone at all")
+                    "setup-mac.command is not in the clone at all")
             else:
                 raw = mac_setup.read_bytes()
                 if b"\r\n" in raw:
                     bad("a Mac member gets an installer they can run",
-                        "the clone's setup.command has Windows line endings - a Mac "
+                        "the clone's setup-mac.command has Windows line endings - a Mac "
                         "refuses it on line one, and the message it gives explains "
                         "nothing the member can act on")
                 elif not raw.startswith(b"#!/bin/bash"):
                     bad("a Mac member gets an installer they can run",
-                        "setup.command does not start with a line saying what runs it")
+                        "setup-mac.command does not start with a line saying what runs it")
                 else:
                     ok("a Mac member gets an installer they can run")
 
-                r = run(["git", "ls-files", "-s", "setup.command"], cwd=clone)
+                r = run(["git", "ls-files", "-s", "setup-mac.command"], cwd=clone)
                 mode = (r.stdout or "").split(" ", 1)[0].strip()
                 if mode == "100755":
                     ok("git records the Mac installer as runnable")
@@ -361,14 +361,56 @@ else:
                         bad("the Mac installer is a valid shell file",
                             (r.stderr or r.stdout).strip()[:200] or "bash refused it")
 
+                # --- Does the clone tell the member which computer they are on?
+                doc = clone / "doctor.py"
+                if not doc.exists():
+                    bad("the clone can work out which computer it is on",
+                        "doctor.py is not in the clone")
+                else:
+                    r = run([sys.executable, "doctor.py"], cwd=clone, timeout=300)
+                    out = (r.stdout or "") + (r.stderr or "")
+                    if r.returncode != 0:
+                        bad("the clone can work out which computer it is on",
+                            "doctor.py stopped: " + out.strip()[-200:])
+                    elif "setup.cmd" not in out or "setup-mac.command" not in out:
+                        bad("the clone can work out which computer it is on",
+                            "doctor.py ran but never named which installer to use")
+                    else:
+                        ok("the clone can work out which computer it is on")
+
+                # --- Are a member's own Claude instructions there, and safe? ---
+                # This is the check that matters most of the five here. That file
+                # is read by an agent with edit access on the member's machine,
+                # and the one change it must never make is the one that would let
+                # a message past a check.
+                cmd_md = clone / "CLAUDE.md"
+                if not cmd_md.exists():
+                    bad("a member's Claude is told what it must never touch",
+                        "CLAUDE.md is not in the clone")
+                else:
+                    txt = cmd_md.read_text(encoding="utf-8", errors="replace").lower()
+                    needed = {
+                        "it forbids weakening the checks": "never weaken",
+                        "it names the send gate file": "crm_bridge.py",
+                        "it forbids sending while diagnosing": "never send a message",
+                        "it forbids editing the tests": "do not edit the test",
+                        "it says a Mac is unproven": "nobody has ever run linkchat",
+                    }
+                    absent = [k for k, v in needed.items() if v not in txt]
+                    if absent:
+                        bad("a member's Claude is told what it must never touch",
+                            "CLAUDE.md no longer says: " + "; ".join(absent))
+                    else:
+                        ok("a member's Claude is told what it must never touch")
+
                 guide_txt = ""
                 for g in (clone / "guide").glob("*.md"):
                     guide_txt += g.read_text(encoding="utf-8", errors="replace")
-                if "setup.command" in guide_txt:
+                if "setup-mac.command" in guide_txt:
                     ok("the guide tells a Mac member which file to run")
                 else:
                     bad("the guide tells a Mac member which file to run",
-                        "no guide in the clone names setup.command, so the installer "
+                        "no guide in the clone names setup-mac.command, so the installer "
                         "exists and nobody is told about it")
 
             r = run([sys.executable, "tests/run_all.py"], cwd=clone, timeout=900)

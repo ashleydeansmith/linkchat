@@ -30,7 +30,7 @@ You need four:
 ### If you are on a Mac, read this first
 
 **Message Ashley before the call, not during it.** There is now a Mac installer in the
-LinkChat folder — it is called `setup.command` and you run that instead of `setup.cmd`.
+LinkChat folder — it is called `setup-mac.command` and you run that instead of `setup.cmd`.
 Everything after the install is identical: the same two screens, the same approval line,
 the same five checks.
 
@@ -40,7 +40,7 @@ Ashley on a message — not live on the call with eight people waiting, where a 
 costs you the session. If it stops, send Ashley everything the window printed. That is
 useful rather than a nuisance, and it is how the Mac version gets finished.
 
-**Three places the Mac differs**, all of them handled by `setup.command`:
+**Three places the Mac differs**, all of them handled by `setup-mac.command`:
 
 - Your Mac has a file called `python3` that is not Python. Typing it opens a box
   offering to install developer tools. The installer refuses that file rather than
@@ -55,7 +55,7 @@ useful rather than a nuisance, and it is how the Mac version gets finished.
   instead, choose Open, then choose Open again** in the box that appears. You only do
   that once.
 
-Wherever this guide says `setup.cmd`, you run `setup.command`. Wherever it says a black
+Wherever this guide says `setup.cmd`, you run `setup-mac.command`. Wherever it says a black
 window, yours is called Terminal.
 
 ---
@@ -323,6 +323,39 @@ Reaching Layer 6 turns sending on. Nothing needs reinstalling.
 
 ## When something goes wrong
 
+### Start here, whatever it is
+
+    python doctor.py        (Windows)
+    python3 doctor.py       (Mac)
+
+Type that in the LinkChat folder. It works out which computer you are on, which installer
+belongs to it, how far the install got, whether the parts and the browser are there, and
+whether it is pointed at your CRM. Then it says what to do next, in one line.
+
+It only looks. It installs nothing, changes nothing, opens no browser and sends no
+message to anybody, so it is safe to run at any point — including before you have
+installed anything and including when it is broken.
+
+**If you are stuck, run it and send Ashley what it printed.** That is more useful than
+describing what happened, because it names the actual cause.
+
+### Getting your own Claude to fix it
+
+You have Claude Code. Open it **in the LinkChat folder** and say:
+
+    run doctor.py and fix what it finds
+
+There is a `CLAUDE.md` in that folder which Claude reads on its own. It tells Claude what
+it may change, and — more to the point — what it must never touch: the checks that stop a
+message going to the wrong person, your CRM records, and the tests. If a fix would need
+one of those weakened, Claude is told to stop and send you to Ashley instead.
+
+**This matters most on a Mac**, where you are the first person ever to run LinkChat.
+Something that stops you is likely to be real rather than your fault, and Claude has what
+it needs to find it. Send Ashley whatever it changed.
+
+### The usual ones
+
 **The desktop icon does nothing when I double-click it.**
 Open the black window, then:
 
@@ -333,7 +366,8 @@ That runs the same program with its errors visible, and the message it prints is
 answer. Send Ashley that message.
 
 **It says a part is missing when I open it.**
-Run `setup.cmd` again. It is safe to run as many times as you like.
+Run the installer again — `setup.cmd` on Windows, `setup-mac.command` on a Mac. It is
+safe to run as many times as you like.
 
 **Sync finds nothing, or the browser line stays on "stopped".**
 Press **Start browser**, sign into LinkedIn in the window that opens, and wait for the

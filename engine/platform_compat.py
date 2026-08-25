@@ -16,8 +16,12 @@ behaviour:
   * WINDOW CONTROL             -> the win32 code still runs on Windows (behaviour
     preserved exactly); on macOS/Linux it is a NO-OP because the keeper Chromium is
     parked off-screen via a launch arg (`--window-position=-32000,-32000`). Surfacing
-    the keeper window for a manual login on macOS is a documented beta gap — the
-    cross-platform fix is CDP `Browser.setWindowBounds`, not an OS window API.
+    the keeper window for a manual login on macOS IS built — `browser._mac_window_state`
+    drives CDP `Browser.setWindowBounds` (windowState normal/minimized), which is the
+    cross-platform fix rather than an OS window API. This comment used to call it an
+    open gap and no longer should: the gap named here was closed, and a stale note
+    saying otherwise sends the next reader off fixing something that works. What is
+    still true is that NO PART of the macOS path has ever been run on a Mac.
   * USER DATA DIR              -> %LOCALAPPDATA% (win) / ~/Library/Application Support
     (mac) / $XDG_DATA_HOME (linux), replacing the bare LOCALAPPDATA lookup.
 

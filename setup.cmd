@@ -1,4 +1,16 @@
 @echo off
+rem ###########################################################################
+rem #                                                                        #
+rem #  ON A MAC? THIS FILE IS NOT FOR YOU.                                   #
+rem #                                                                        #
+rem #  If you are reading this in TextEdit, you have double-clicked the      #
+rem #  Windows installer. Close it and double-click setup-mac.command.       #
+rem #                                                                        #
+rem #  Not sure which computer you are on? Open Terminal in this folder      #
+rem #  and type:    python3 doctor.py                                        #
+rem #  It works it out and tells you which file to run.                      #
+rem #                                                                        #
+rem ###########################################################################
 rem ---------------------------------------------------------------------------
 rem  LinkChat - setup
 rem

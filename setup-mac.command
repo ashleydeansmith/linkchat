@@ -27,6 +27,32 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE" || exit 1
 
+# --- Is this actually a Mac? ----------------------------------------------
+# Somebody on Windows who opens this in Git Bash gets a half-install with no
+# desktop icon and no error naming the cause. Say it instead.
+KIND="$(uname -s 2>/dev/null || echo unknown)"
+case "$KIND" in
+  Darwin) ;;
+  MINGW*|MSYS*|CYGWIN*)
+    echo
+    echo "  This is the Mac installer and this is a Windows computer."
+    echo
+    echo "  Close this and double-click  setup.cmd  instead."
+    echo
+    read -r -p "  Press return to close. " _ || true
+    exit 1 ;;
+  *)
+    echo
+    echo "  This computer reports itself as: $KIND"
+    echo
+    echo "  LinkChat has been run on Windows only. This installer was written"
+    echo "  for a Mac and has never been run on one. It may work here and"
+    echo "  nobody knows. Message Ashley before you rely on it."
+    echo
+    read -r -p "  Press return to carry on anyway, or close this window. " _ || true
+    ;;
+esac
+
 echo
 echo "  Setting up LinkChat. This takes about five minutes, most of it downloading."
 echo
