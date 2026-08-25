@@ -264,7 +264,7 @@ print("  5. Words a member should never be shown")
 print("=" * 72)
 
 BANNED = re.compile(r"\b(things?|bites?|biting)\b", re.I)
-member_visible = [ROOT / "setup.cmd", ROOT / "README.md"] + guides \
+member_visible = [ROOT / "setup.cmd", ROOT / "setup.command", ROOT / "README.md"] + guides \
     + sorted((ROOT / "web" / "src").rglob("*.jsx"))
 hits = []
 for p in member_visible:
@@ -275,7 +275,7 @@ for p in member_visible:
         # Only what a person reads on screen, not what a programmer reads.
         if p.suffix == ".jsx" and not re.search(r">[^<>{]*\b(things?|bites?)\b", line, re.I):
             continue
-        if p.suffix in (".cmd", ".py") and line.strip().startswith(("rem", "#")):
+        if p.suffix in (".cmd", ".command", ".py") and line.strip().startswith(("rem", "#")):
             continue
         if BANNED.search(line):
             hits.append("%s:%d %s" % (p.relative_to(ROOT), i, line.strip()[:60]))
@@ -313,6 +313,63 @@ else:
                   "the clone did not happen")
         else:
             ok("a member can clone the address they are given")
+
+            # --- What a Mac member actually receives -----------------------
+            # Every one of these is about the journey out of git, not about the
+            # file sitting here. A shell file is refused by a Mac on its first
+            # line if git rewrote its line endings on the way out, and the error
+            # it gives names nothing the member can act on.
+            mac_setup = clone / "setup.command"
+            if not mac_setup.exists():
+                bad("a Mac member gets an installer they can run",
+                    "setup.command is not in the clone at all")
+            else:
+                raw = mac_setup.read_bytes()
+                if b"\r\n" in raw:
+                    bad("a Mac member gets an installer they can run",
+                        "the clone's setup.command has Windows line endings - a Mac "
+                        "refuses it on line one, and the message it gives explains "
+                        "nothing the member can act on")
+                elif not raw.startswith(b"#!/bin/bash"):
+                    bad("a Mac member gets an installer they can run",
+                        "setup.command does not start with a line saying what runs it")
+                else:
+                    ok("a Mac member gets an installer they can run")
+
+                r = run(["git", "ls-files", "-s", "setup.command"], cwd=clone)
+                mode = (r.stdout or "").split(" ", 1)[0].strip()
+                if mode == "100755":
+                    ok("git records the Mac installer as runnable")
+                elif mode:
+                    bad("git records the Mac installer as runnable",
+                        "git records it as %s, so a Mac refuses to run it until the "
+                        "member types a command nobody has written down for them"
+                        % mode)
+                else:
+                    unrun("git records the Mac installer as runnable",
+                          "git did not report a mode for it")
+
+                bash = shutil.which("bash")
+                if not bash:
+                    unrun("the Mac installer is a valid shell file",
+                          "there is no bash on this computer to check it with")
+                else:
+                    r = run([bash, "-n", str(mac_setup)], cwd=clone, timeout=60)
+                    if r.returncode == 0:
+                        ok("the Mac installer is a valid shell file")
+                    else:
+                        bad("the Mac installer is a valid shell file",
+                            (r.stderr or r.stdout).strip()[:200] or "bash refused it")
+
+                guide_txt = ""
+                for g in (clone / "guide").glob("*.md"):
+                    guide_txt += g.read_text(encoding="utf-8", errors="replace")
+                if "setup.command" in guide_txt:
+                    ok("the guide tells a Mac member which file to run")
+                else:
+                    bad("the guide tells a Mac member which file to run",
+                        "no guide in the clone names setup.command, so the installer "
+                        "exists and nobody is told about it")
 
             r = run([sys.executable, "tests/run_all.py"], cwd=clone, timeout=900)
             if r.returncode == 0 and "Clean." in r.stdout:

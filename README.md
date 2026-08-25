@@ -11,9 +11,6 @@ below is the short version for somebody who has already read it.
 
 ## Install, in four lines
 
-Windows only. A Mac version has not been built — if you are on a Mac, message Ashley
-rather than installing anything.
-
     cd %USERPROFILE%\Documents
     git clone https://github.com/ashleydeansmith/linkchat.git LinkChat
 
@@ -22,6 +19,11 @@ it puts on your desktop.
 
 Needs Python 3.10 or later from python.org, with **"Add python.exe to PATH"** ticked on
 the installer's first screen.
+
+**On a Mac** you run `setup.command` instead, and Python comes from
+https://www.python.org/downloads/macos/. **Nobody has ever run LinkChat on a Mac** — do
+the install the day before, with Ashley on a message, rather than live on the call. The
+Mac paragraph in the guide says what differs and what to do when it stops.
 
 ---
 

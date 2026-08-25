@@ -20,17 +20,43 @@ rather than beside it — but nobody should meet that fact by accident.
 
 You need four:
 
-1. **A Windows computer.** See the next paragraph if you are on a Mac.
+1. **A Windows computer**, or a Mac — read the Mac paragraph below before you start.
 2. **The CRM you built in Sessions 0 to 2**, on this same computer. LinkChat needs the
    folder it lives in.
 3. **Your LinkedIn login**, the normal one. You will type it into a normal browser
    window, once.
 4. **About twenty minutes**, most of it waiting for downloads.
 
-**If you are on a Mac: stop here and message Ashley before you install anything.** The
-Mac version has not been built or tested. Everything below is written for Windows and
-the installer file will not run for you. This is not a small difference you can work
-around — half-installing it will cost you more time than waiting will.
+### If you are on a Mac, read this first
+
+**Message Ashley before the call, not during it.** There is now a Mac installer in the
+LinkChat folder — it is called `setup.command` and you run that instead of `setup.cmd`.
+Everything after the install is identical: the same two screens, the same approval line,
+the same five checks.
+
+**Nobody has ever run LinkChat on a Mac.** It was written on 2026-08-25 and has never
+been run on the computer it is for. So do the install the day before, on your own, with
+Ashley on a message — not live on the call with eight people waiting, where a fault
+costs you the session. If it stops, send Ashley everything the window printed. That is
+useful rather than a nuisance, and it is how the Mac version gets finished.
+
+**Three places the Mac differs**, all of them handled by `setup.command`:
+
+- Your Mac has a file called `python3` that is not Python. Typing it opens a box
+  offering to install developer tools. The installer refuses that file rather than
+  half-installing on top of it — the same way the Windows one refuses the Microsoft
+  Store. If you need the real one it is at
+  **https://www.python.org/downloads/macos/**.
+- The Python that comes with a Mac refuses to have anything installed into it. So
+  LinkChat builds its own private Python inside its own folder and installs there.
+  Nothing outside the LinkChat folder is touched.
+- The first time you double-click the LinkChat file on your desktop, your Mac may say
+  it cannot be opened because it is from an unidentified developer. **Right-click it
+  instead, choose Open, then choose Open again** in the box that appears. You only do
+  that once.
+
+Wherever this guide says `setup.cmd`, you run `setup.command`. Wherever it says a black
+window, yours is called Terminal.
 
 ---
 

@@ -198,26 +198,59 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
 def reap_playwright_chromium():
     """Reap orphaned Playwright Chromium + clear the chromium singleton locks.
 
-    PATH-SCOPED: only kills `chrome.exe` whose ExecutablePath is under
-    `*ms-playwright*` — never a Program-Files Chrome and never Firefox. Safe to
-    call on the failure/exit path while this process holds READ_LOCK (no other
-    LinkedIn automation can be on the profile). Then clears the chromium
+    PATH-SCOPED: only kills a browser whose program file sits under
+    `*ms-playwright*` — never a personal Chrome, never Firefox, never Safari.
+    Safe to call on the failure/exit path while this process holds READ_LOCK (no
+    other LinkedIn automation can be on the profile). Then clears the chromium
     Singleton* lock files a force-kill can leave behind so the next launch is clean.
+
+    Windows does the kill through PowerShell, exactly as it has since 2026-07-11.
+    macOS and Linux do it through psutil. The lock-file clearing runs on EVERY
+    computer — until 2026-08-25 it sat behind a Windows-only return, so a keeper
+    that died on a Mac left a lock nothing ever cleared and every launch after it
+    was refused for a reason the member could not see.
     """
-    if not sys.platform.startswith("win"):
-        return
-    import subprocess
-    try:
-        subprocess.run(
-            ["powershell", "-NoProfile", "-Command",
-             "Get-CimInstance Win32_Process | "
-             "Where-Object { $_.Name -eq 'chrome.exe' -and $_.ExecutablePath -like '*ms-playwright*' } | "
-             "ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }"],
-            timeout=30, capture_output=True,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),   # no flashing window
-        )
-    except Exception:
-        pass
+    if sys.platform.startswith("win"):
+        # Windows: unchanged since 2026-07-11. Deliberately NOT routed through the
+        # psutil path below — this is send-path-adjacent code and the Windows
+        # behaviour is the proven one.
+        import subprocess
+        try:
+            subprocess.run(
+                ["powershell", "-NoProfile", "-Command",
+                 "Get-CimInstance Win32_Process | "
+                 "Where-Object { $_.Name -eq 'chrome.exe' -and $_.ExecutablePath -like '*ms-playwright*' } | "
+                 "ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }"],
+                timeout=30, capture_output=True,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),   # no flashing window
+            )
+        except Exception:
+            pass
+    else:
+        # macOS and Linux: psutil, which is already installed for everything else.
+        # Same rule as the Windows line above and it is the whole safety of this
+        # function — only kill a browser whose program file sits inside the
+        # Playwright folder. A personal Chrome or Safari is never a candidate.
+        try:
+            import psutil
+            for proc in psutil.process_iter(["name", "exe"]):
+                try:
+                    exe = (proc.info.get("exe") or "")
+                    name = (proc.info.get("name") or "").lower()
+                    if "ms-playwright" not in exe.lower():
+                        continue
+                    if "chrom" not in name and "chrom" not in os.path.basename(exe).lower():
+                        continue
+                    proc.kill()
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
+    # Clearing the lock files is NOT a Windows job and used to sit behind the
+    # Windows-only return above. A keeper that dies on a Mac leaves SingletonLock
+    # behind, and every launch afterwards is refused with the profile already in
+    # use — a fault with no visible cause. This now runs on every computer.
     for name in ("SingletonLock", "SingletonCookie", "SingletonSocket"):
         try:
             f = SESSION_DIR / name

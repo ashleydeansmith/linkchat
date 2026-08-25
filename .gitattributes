@@ -1,0 +1,13 @@
+# Line endings.
+#
+# A Mac refuses a shell file whose lines end the Windows way. The error it gives
+# is "bad interpreter: /bin/bash^M", which says nothing to the person reading it
+# and stops the install on its first line. Git was rewriting setup.command to
+# Windows endings on the way in, so a Mac member cloning this would have hit
+# exactly that. These lines pin the files that must stay as they are.
+*.command text eol=lf
+*.sh      text eol=lf
+
+# And the Windows installer must keep Windows endings for the same reason in
+# reverse - a .cmd file with Unix endings misreads its own labels.
+*.cmd     text eol=crlf
