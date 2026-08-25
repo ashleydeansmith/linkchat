@@ -567,7 +567,7 @@ From now on this is the sequence LinkChat follows when it writes a message for y
               )}
               {graph.meta?.give_bank && (
                 <>
-                  <div className="cf-lbl">Things you can send them</div>
+                  <div className="cf-lbl">What you can send them</div>
                   {graph.meta.give_bank.map((x, i) => <div key={i} className="cf-chip">{x}</div>)}
                 </>
               )}
