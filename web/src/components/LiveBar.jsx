@@ -71,6 +71,8 @@ export default function LiveBar() {
   }
 
   const keeper = !!inbox?.keeper;
+  const needsLogin = !!inbox?.needs_login && !inbox?.signed_in;
+  const signedIn = !!inbox?.signed_in;
   const syncing = !!inbox?.sync?.running;
   const last = inbox?.sync?.result;
   const cap = crm?.cap;
@@ -79,13 +81,22 @@ export default function LiveBar() {
 
   return (
     <div className="livebar">
-      {/* Is the LinkedIn browser up? This is the one the guide points at. */}
-      <span className="lb-item" title={keeper
-        ? "LinkChat has a LinkedIn browser open and can read and send."
-        : "No LinkedIn browser yet. It opens by itself the first time you press Sync."}>
-        <span className={"lb-dot " + (keeper ? "lb-green" : "lb-grey")} />
-        LinkedIn browser: <strong>{keeper ? "running" : "not started"}</strong>
-      </span>
+      {/* Signed in, or waiting for you to sign in. The program knew this all
+          along - the browser writes it down - and never said it anywhere. */}
+      {needsLogin ? (
+        <span className="lb-item lb-signin" title="A browser window has opened on the LinkedIn login page. It may be behind this one.">
+          <span className="lb-dot lb-amber lb-pulse" />
+          <strong>Sign in to LinkedIn</strong>
+          <span className="lb-muted"> — a browser window is open and waiting, possibly behind this one</span>
+        </span>
+      ) : (
+        <span className="lb-item" title={keeper
+          ? "LinkChat has a LinkedIn browser open and can read and send."
+          : "No LinkedIn browser yet. It opens by itself the first time you press Sync."}>
+          <span className={"lb-dot " + (keeper ? "lb-green" : "lb-grey")} />
+          LinkedIn: <strong>{keeper ? (signedIn ? "signed in" : "browser running") : "not started"}</strong>
+        </span>
+      )}
 
       <span className="lb-sep">·</span>
 

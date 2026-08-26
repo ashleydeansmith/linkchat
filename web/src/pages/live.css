@@ -26,3 +26,6 @@
 .lv-who { flex: 1 1 auto; }
 .lv-nobody { flex: 0 0 auto; font-size: 11.5px; color: #b45309; background: #FFF8E6;
              border-radius: 999px; padding: 1px 8px; }
+
+/* Waiting for a sign-in. Amber because it needs a person, not because it broke. */
+.lb-signin { color: #92400e; }

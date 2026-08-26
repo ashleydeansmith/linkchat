@@ -82,6 +82,11 @@ export default function Home({ onNavigate }) {
     next = { say: "This copy can read everything and send nothing until Layer 6 of "
                   + "your CRM is installed. Nothing is broken; it turns on by itself.",
              go: null };
+  } else if (inbox?.needs_login && !inbox?.signed_in) {
+    next = { say: "Sign in to LinkedIn. A browser window is open and waiting on the "
+                  + "login page — it may be behind this one. Once you are in, come "
+                  + "back and press Sync inbox again.", go: "inbox",
+             cta: "Go to Conversations" };
   } else if (neverSynced) {
     next = { say: "Read your LinkedIn inbox for the first time. Press Sync inbox on "
                   + "Conversations — that is also what opens the browser, and you sign "

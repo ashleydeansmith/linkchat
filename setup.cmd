@@ -63,7 +63,11 @@ python -m playwright install chromium
 if errorlevel 1 goto failed
 
 echo   [3 of 4] Checking the parts actually landed...
-python -c "import fastapi, uvicorn, pydantic, playwright, webview, psutil" 
+rem  playwright.sync_api, not playwright. The outer name imports fine even
+rem  when the half that drives a browser is missing - so a part-finished
+rem  install passed this check and produced a program that could never
+rem  reach LinkedIn, with nothing on screen to say why.
+python -c "import fastapi, uvicorn, pydantic, playwright.sync_api, webview, psutil" 
 if errorlevel 1 goto parts_missing
 
 echo   [4 of 4] Putting LinkChat on your desktop...

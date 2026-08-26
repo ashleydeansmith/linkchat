@@ -31,7 +31,10 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 IS_WIN = sys.platform.startswith("win")
 IS_MAC = sys.platform == "darwin"
 
-NEEDED = ["fastapi", "uvicorn", "pydantic", "playwright", "psutil"]
+# playwright.sync_api rather than playwright. The outer name imports fine
+# even when the half that actually drives a browser did not install - and a
+# part-finished install then looks complete while nothing can reach LinkedIn.
+NEEDED = ["fastapi", "uvicorn", "pydantic", "playwright.sync_api", "psutil"]
 
 next_steps = []
 

@@ -171,7 +171,22 @@ def _run_sync(max_deep: int) -> None:
 def status():
     cx = _cx()
     try:
+        # WHETHER YOU ARE SIGNED IN, not just whether a browser is open.
+        #
+        # The keeper already worked this out - it watches for LinkedIn's login
+        # page and puts a flag on disk - but nothing ever told a screen, so the
+        # program knew a member was locked out and said nothing. They pressed
+        # Sync, a browser appeared somewhere behind the window, and LinkChat
+        # carried on as though it were reading.
+        signed_in, needs_login = None, None
+        try:
+            from engine import browser as _B
+            needs_login = _B.NEEDS_LOGIN_FLAG.exists()
+            signed_in = _B.LOGGED_IN_FLAG.exists()
+        except Exception:
+            pass
         return {"version": __version__, "keeper": K.keeper_running(),
+                "needs_login": needs_login, "signed_in": signed_in,
                 **db.counts(cx), "boxes": db.box_counts(cx), "sync": _sync}
     finally:
         cx.close()

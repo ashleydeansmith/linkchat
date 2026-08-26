@@ -118,7 +118,9 @@ echo "  [4 of 5] Downloading the browser LinkChat reads with (about 150 MB)..."
 "$VPY" -m playwright install chromium || { echo; echo "  That did not finish. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
 
 echo "  [5 of 5] Checking the parts actually landed, and putting LinkChat on your desktop..."
-"$VPY" -c "import fastapi, uvicorn, pydantic, playwright, psutil" || {
+# playwright.sync_api, not playwright: the outer name imports even when the
+# half that drives a browser is missing.
+"$VPY" -c "import fastapi, uvicorn, pydantic, playwright.sync_api, psutil" || {
   echo
   echo "  The parts installed but Python cannot find them."
   echo "  Send the last few lines above to whoever gave you this."
