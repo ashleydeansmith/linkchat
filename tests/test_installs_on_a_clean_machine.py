@@ -101,7 +101,20 @@ def _optional_imports(tree):
 
 outside = {}
 chosen = set()
-for path in sorted(ENGINE.rglob("*.py")):
+
+# EVERY shipped Python file, not just the ones under engine/.
+#
+# This walked engine/ alone. linkedin_browser.py sits at the top level and was
+# therefore never parsed - and on 2026-08-26 a rename left a syntax error in it,
+# inside a function on the send path. The suite passed: that import is lazy, so
+# nothing reads it until a message is actually being carried. It was found by
+# sending one in a sandbox, which is far too late.
+#
+# doctor.py and linkedin_browser.py ship and run, so they are checked too.
+SHIPPED = sorted(ENGINE.rglob("*.py")) + sorted(
+    p for p in ROOT.glob("*.py") if p.name != "setup.py")
+
+for path in SHIPPED:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
     except SyntaxError as exc:
@@ -145,19 +158,22 @@ browser = (ENGINE / "browser.py").read_text(encoding="utf-8")
 mine = re.search(r"^PORT\s*=\s*(\d+)", browser, re.M)
 check("LinkChat names a browser door", mine is not None)
 
-# The program LinkChat was cut out of lives on this machine, and both run at
-# once. On a member's computer it is not there, and then there is nothing to
-# collide with and nothing to check.
-NEIGHBOUR = Path.home() / "Documents" / "the parent program" / "the parent program" / "browser.py"
-if mine and NEIGHBOUR.exists():
-    theirs = re.search(r"^PORT\s*=\s*(\d+)", NEIGHBOUR.read_text(encoding="utf-8"), re.M)
-    if theirs:
-        check("it is not the same door the other program uses",
-              mine.group(1) != theirs.group(1),
-              "both on %s - LinkChat would drive the other one's browser"
-              % mine.group(1))
-else:
-    print("  ---   the other program is not on this machine; nothing to collide with")
+# The door that is already taken. A constant, on purpose.
+#
+# This used to look for the other program's folder on the machine and only run
+# if it was there - so on a member's computer it did nothing, and after a rename
+# its path pointed at a folder that never exists, so it did nothing anywhere. It
+# printed "nothing to collide with" and read like a pass. A check that cannot
+# fail is worse than no check.
+#
+# The number is the fact worth keeping. The two doors were the same until
+# 2026-08-23, and LinkChat drove the other program's signed-in browser.
+PORT_ALREADY_TAKEN = "9333"
+check("LinkChat's browser door is not the one already taken",
+      mine is not None and mine.group(1) != PORT_ALREADY_TAKEN,
+      "LinkChat is on %s, which is the door the other program answers on - it "
+      "would drive that browser, signed into a different account"
+      % (mine.group(1) if mine else "?"))
 
 # The screens are served on a different number again, and for the same reason.
 web = (ENGINE / "__main__.py").read_text(encoding="utf-8")

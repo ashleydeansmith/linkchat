@@ -122,7 +122,7 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
     reaping the keeper and burning the rest of the batch.
     """
     if shared:
-        from the parent program import browser as _lfb
+        from engine import browser as _lfb
         ctx = None
         try:
             ctx = _lfb.connect(pw)        # NB: returns None on CDP failure, does not raise
@@ -178,7 +178,7 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
         # `*ms-playwright*` chrome.exe. If a keeper came up in the gap, reaping here would
         # kill it and re-open the exact death spiral above. No keeper => nothing to protect.
         try:
-            from the parent program import browser as _lfb
+            from engine import browser as _lfb
             if _lfb.keeper_running():
                 raise KeeperUnavailable(
                     "A keeper browser is running, so the private-launch reaper is refused "

@@ -499,8 +499,23 @@ class Bridge:
         from datetime import datetime, timezone
         when = datetime.now(timezone.utc).isoformat(timespec="seconds")
         stamp = when.replace(":", "").replace("-", "")
+        # THE NAME GOES IN THE FILENAME, SO IT HAS TO BE SHORT ENOUGH TO WRITE.
+        #
+        # It was not capped. Windows refuses a path over 260 characters, and a
+        # long name plus a deep CRM folder goes past that - so the write raised,
+        # the send returned a 500, and THE WORDS WERE NEVER WRITTEN DOWN. That
+        # is the one promise this file makes: a send that fails still leaves you
+        # the message. A long name broke the safety net itself.
+        #
+        # Not a hypothetical. A real connection on LinkedIn is called
+        # "Dr. <name>, CSci., CEnv., MIEnvSc., MRSB, FIMC." - the postnominals
+        # alone are most of the allowance.
+        #
+        # 60 characters is plenty to recognise somebody by, and the full name is
+        # written inside the file where nothing truncates it.
         who = "".join(c for c in str(message.get("to") or "unknown")
                       if c.isalnum() or c in " -_").strip() or "unknown"
+        who = who[:60].strip() or "unknown"
         target = folder / ("%s--%s.md" % (stamp, who))
         lines = "\n".join("- %s: %s" % (c.get("id"), c.get("reason"))
                            for c in verdict.get("checks") or [])
