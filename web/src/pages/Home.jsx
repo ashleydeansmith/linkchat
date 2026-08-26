@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../api.js";
 import "./home.css";
 
-// Where things stand, and the one thing to do next.
+// Where you are, and the one step to take next.
 //
 // The first screen a member sees was Conversations, which drops somebody into a
 // list before they know what the program is for or whether it is even working.
@@ -11,7 +11,7 @@ import "./home.css";
 //
 // EVERYTHING HERE IS READ FROM DOORS THAT EXIST. Nothing on this screen invents
 // a number, and nothing on it sends. The screens this program was cut out of
-// had a Home that asked for six things the engine here does not answer, and it
+// had a Home that asked for six doors the engine here does not answer, and it
 // would have drawn a page of blanks.
 
 function Stat({ n, label, tone }) {
@@ -73,8 +73,8 @@ export default function Home({ onNavigate }) {
   const left = cap == null ? null : Math.max(cap - used, 0);
   const neverSynced = convs === 0;
 
-  // The single next step, worked out rather than listed. A page of six things
-  // you could do is a page nobody acts on.
+  // The single next step, worked out rather than listed. A page of six choices
+  // is a page nobody acts on.
   let next = null;
   if (!crm?.connected) {
     next = { say: "Point LinkChat at the CRM you built in Sessions 0 to 2.", go: null };
@@ -107,7 +107,7 @@ export default function Home({ onNavigate }) {
 
       <div className="hm-head">
         {/* Time of day read off the clock. It said "Morning" at eight in the
-            evening, which is a small thing to get wrong and exactly the kind
+            evening, which is a small detail to get wrong and exactly the kind
             somebody notices first. */}
         <h1>
           {crm?.you
@@ -117,7 +117,7 @@ export default function Home({ onNavigate }) {
             : "LinkChat"}
         </h1>
         <p className="hm-sub">
-          Two screens over the CRM you already built. It keeps no record of its own —
+          Four screens over the CRM you already built. It keeps no record of its own —
           your people, your event log, your daily limit and your do-not-message list
           all stay in your CRM.
         </p>

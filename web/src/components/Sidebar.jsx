@@ -1,5 +1,5 @@
 // Four destinations, and a settings button, in the order the job happens:
-// where things stand, the conversations, what to say next, and what is happening
+// where you are, the conversations, what to say next, and what is happening
 // right now.
 //
 // "Find people" was here and is not any more. It ran the four jobs from Session

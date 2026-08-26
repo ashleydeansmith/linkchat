@@ -169,7 +169,11 @@ it, never stores it, and never asks you for it.
 
 ---
 
-## The three screens
+## The four screens
+
+**Home.** Where you are. Whether LinkedIn is connected, how many conversations have
+been read, how many people are waiting on a reply, how much of today's limit is left — and
+one next step rather than a list of six. It is the screen it opens on.
 
 **Conversations.** Every LinkedIn conversation you have, read into one list. Press
 **Sync inbox** to go and read your inbox again; that opens pages and reads them, which takes a
@@ -178,9 +182,13 @@ words.
 
 **Sequences.** The branches — what gets sent when somebody replies a particular way, and
 what is waiting for your approval right now. This is where a message a sequence wrote is
-shown to you, and where you approve it.
+shown to you, and where you approve it. The **Cockpit** tab on this screen is the one that
+lists the replies your sequence already has words for.
 
-**Find people.** Search across the people your CRM already knows about.
+**Live.** What LinkChat is doing at this moment, and every line your CRM has recorded —
+newest first. It is read from your own event log, so it shows what your CRM actually
+believes happened rather than a second story told by the screen. Nothing on it sends or
+changes anything.
 
 ---
 
