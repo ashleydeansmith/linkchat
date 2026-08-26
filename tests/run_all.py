@@ -2,7 +2,7 @@
 
     python tests/run_all.py
 
-Nine checks run, in the order a fault would matter:
+Ten checks run, in the order a fault would matter:
 
   installs      does this work on a computer that is not the one it was built on
   names         does anybody's LinkedIn name field get typed back at them
@@ -35,6 +35,7 @@ RUNS = [
     ("installs on a clean machine", "test_installs_on_a_clean_machine.py"),
     ("nobody's name typed back", "test_name_decoration.py"),
     ("nothing reaches a person unapproved", "test_nothing_sends_unapproved.py"),
+    ("the hold list cannot be walked around", "test_hold_list_cannot_be_bypassed.py"),
     ("the starter is a shape, not a script", "test_starter_sequence.py"),
     ("the screens and the engine agree", "test_screens_and_engine_agree.py"),
     ("a conversation name is a name", "test_inbox_row_names.py"),

@@ -72,6 +72,13 @@ class NotAllowed(Exception):
     """Something asked to act and the answer was no. The reason says why."""
 
 
+import itertools as _itertools
+
+# One counter for the whole process, so no two writes from here ever build the
+# same temp filename. Two messages approved in the same second used to.
+_OUTBOX_COUNTER = _itertools.count(1)
+
+
 # --------------------------------------------------------------- finding it
 
 def remembered():
@@ -83,15 +90,29 @@ def remembered():
 
 
 def remember(path):
-    """Write down which CRM folder to use, so you are asked once and not again."""
+    """Write down which CRM folder to use, so you are asked once and not again.
+
+    WRITES ONLY WHEN THE ANSWER CHANGES.
+    This was called on every single request that opened the CRM - so choosing a
+    folder once meant rewriting the settings file hundreds of times a day for no
+    reason. Under any load at all the writes collided: they all used one temp
+    name, and Windows refused the second one. Ten sends at once produced eight
+    failures, none of them anything to do with sending. Found 2026-08-26.
+
+    The temp name is unique per write as well, so two writes that DO both need
+    to happen cannot tread on each other either.
+    """
     path = Path(path).expanduser().resolve()
     data = {}
     try:
         data = json.loads(SETTINGS.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         pass
+    if data.get("crm") == str(path):
+        return path                    # already says this; nothing to write
     data["crm"] = str(path)
-    tmp = SETTINGS.with_suffix(".json.tmp")
+    tmp = SETTINGS.with_name(SETTINGS.name + ".%d-%d.tmp"
+                             % (os.getpid(), next(_OUTBOX_COUNTER)))
     tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
     os.replace(tmp, SETTINGS)          # never open the real file for writing
     return path
@@ -119,6 +140,57 @@ def find():
 
 
 # --------------------------------------------------------------- the bridge
+
+def _every_form_of(*identifiers):
+    """One person, written every way a profile link is actually written.
+
+    THE HOLD LIST WAS BYPASSABLE AND THIS IS THE FIX.
+    A hold recorded as `linkedin.com/in/someone` did not match when the same
+    person arrived as `https://www.linkedin.com/in/someone` - which is exactly
+    the form LinkChat captures off a thread. Nine of ten real spellings got
+    through: with the scheme, with www., with a trailing slash, with tracking
+    on the end, with a locale suffix, in different case. Proved live on
+    2026-08-26 by sending to a held person and getting a 200.
+
+    The weakness is in the key function inside the CRM, which LinkChat does not
+    own. What LinkChat owns is WHAT IT ASKS ABOUT, and the question takes as
+    many identifiers as you give it. So it is given all of them.
+
+    This makes the gate stricter, never looser: more forms asked can only ever
+    find MORE holds, never fewer. That direction matters - the danger is
+    loosening a check to let something past, and this is the opposite.
+    """
+    out, seen = [], set()
+
+    def add(v):
+        v = (v or "").strip()
+        if v and v not in seen:
+            seen.add(v)
+            out.append(v)
+
+    for raw in identifiers:
+        raw = str(raw or "").strip()
+        if not raw:
+            continue
+        add(raw)
+        if "/in/" not in raw.lower():
+            continue                      # a name: nothing more to derive
+        try:
+            from .canon import canon_in
+            full = canon_in(raw)          # https://www.linkedin.com/in/<slug>
+        except Exception:
+            full = raw
+        add(full)
+        slug = full.rstrip("/").split("/in/")[-1].split("?")[0].strip("/")
+        if slug:
+            add("linkedin.com/in/%s" % slug)
+            add("www.linkedin.com/in/%s" % slug)
+            add("https://linkedin.com/in/%s" % slug)
+            add("/in/%s" % slug)
+            add(slug)
+            add(slug.lower())
+    return out
+
 
 class Bridge:
     """One open door into one CRM."""
@@ -333,9 +405,10 @@ class Bridge:
         if holds is None:
             return True
         try:
+            asked = _every_form_of(*identifiers)
             if hasattr(holds, "is_held_person"):
-                return bool(holds.is_held_person(*identifiers))
-            return bool(holds.is_held(*identifiers))
+                return bool(holds.is_held_person(*asked))
+            return bool(holds.is_held(*asked))
         except Exception:
             return True
 
@@ -538,10 +611,50 @@ class Bridge:
             % (message.get("to", ""), message.get("identifier", ""),
                message.get("kind", "reply"), when,
                str(message.get("body", "")).strip(), lines))
-        tmp = target.with_suffix(".md.tmp")
+        # TWO MESSAGES IN THE SAME SECOND MUST NOT COLLIDE.
+        #
+        # The name is built from a timestamp counted in whole seconds plus the
+        # person, so approving several in quick succession produced the same
+        # name every time. Two faults came out of that, and both LOSE A MESSAGE,
+        # which is the one outcome this file exists to prevent:
+        #
+        #   the temp file  - two writers opened it at once and Windows refused
+        #                    the second: PermissionError, a 500, nothing written
+        #   the real file  - the later write silently replaced the earlier one,
+        #                    so one message vanished with no error at all
+        #
+        # Found on 2026-08-26 by approving eight at once: three were written,
+        # five crashed.
+        #
+        # The temp name is now unique per write, and a name already taken gets a
+        # counter rather than overwriting somebody's words.
+        n = next(_OUTBOX_COUNTER)
+        tmp = target.with_name(target.name + ".%d-%d.tmp" % (os.getpid(), n))
+
+        # CLAIM THE NAME, DO NOT LOOK AND THEN TAKE IT.
+        #
+        # Asking "does this name exist yet?" and then writing to it is two steps
+        # with a gap in the middle, and under a burst two writers both looked,
+        # both saw nothing, and both picked the same name - so one message
+        # silently replaced another. Ten sent at once produced four files.
+        #
+        # os.open with O_CREAT|O_EXCL is one step: it creates the file or it
+        # fails. Whoever fails takes the next name. Nobody loses a message.
+        final, bump = target, 0
+        while True:
+            try:
+                fd = os.open(str(final), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.close(fd)
+                break
+            except FileExistsError:
+                bump += 1
+                final = target.with_name("%s-%d.md" % (target.stem, bump))
+            except OSError:
+                break                # cannot claim it; the write below will say why
+
         tmp.write_text(body, encoding="utf-8", newline="\n")
-        os.replace(tmp, target)      # never open the real file for writing
-        return target
+        os.replace(tmp, final)       # never open the real file for writing
+        return final
 
     # -------------------------------------------------------------- people
     #

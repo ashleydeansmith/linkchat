@@ -363,10 +363,19 @@ def import_flows_json(src, name: str = "imported flow", activate: bool = False,
     types it in the F2 editor — prose is a label, never a condition, finding 4)."""
     doc = src if isinstance(src, dict) else json.loads(Path(src).read_text(encoding="utf-8"))
     errs: list[str] = []
-    for b in doc.get("branches", []):
-        errs += [f"{b.get('id')}: {e}" for e in validate_patterns(b.get("patterns", []))]
+    for i, b in enumerate(doc.get("branches", [])):
+        # A branch with no id crashed the import with a 500 and no explanation.
+        # Somebody editing a flow file by hand will leave one out, and the answer
+        # to that is a sentence naming the branch, not a stack trace.
+        if not isinstance(b, dict):
+            errs.append("branch %d is not a block of settings" % (i + 1))
+            continue
+        if not str(b.get("id") or "").strip():
+            errs.append("branch %d has no id, so nothing can point at it" % (i + 1))
+        errs += [f"{b.get('id') or ('branch %d' % (i + 1))}: {e}"
+                 for e in validate_patterns(b.get("patterns", []))]
     if errs:
-        raise ValueError("flows.json failed pattern validation: " + "; ".join(errs))
+        raise ValueError("this flow file cannot be used: " + "; ".join(errs))
     now = _now()
     meta = {k: doc[k] for k in ("escalation", "give_bank", "drafting_rules", "_doc")
             if k in doc}
