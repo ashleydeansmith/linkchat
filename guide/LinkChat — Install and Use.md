@@ -95,17 +95,25 @@ When it finishes, **close the black window and open a new one**, then run
 
 LinkChat is open. Anybody can download it, and there is nothing to be invited to.
 
-In the black window, type these two lines, pressing Enter after each:
+**The simple way — no extra software.** Open
+**https://github.com/OWNER/linkchat** in your browser, press the green **Code**
+button, and choose **Download ZIP**. Unzip it into your Documents folder and rename
+the folder to `LinkChat`, so you end up with `Documents\LinkChat`.
+
+**The other way, if you already have Git.** It is worth it if you want to pick up
+later versions with one command rather than downloading again. In the black window,
+type these two lines, pressing Enter after each:
 
     cd %USERPROFILE%\Documents
     git clone https://github.com/OWNER/linkchat.git LinkChat
 
 - It should not ask you to sign in. If it does, the address has been mistyped.
-- If it says `git` is not recognised, install Git from
+- If it says `git` is not recognised, either use the ZIP above or install Git from
   **https://git-scm.com/download/win**, accept every default, then close the black
   window, open a new one, and run the two lines again.
 
-You now have a folder at `Documents\LinkChat`.
+Either way you now have a folder at `Documents\LinkChat`, and the rest of this guide
+is the same.
 
 ---
 
