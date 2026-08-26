@@ -1,16 +1,16 @@
-"""flows_chart.py — the DM conversation-flow chart (Ashley, 2026-07-14): "map what
+"""flows_chart.py — the DM conversation-flow chart (ruled 2026-07-14): "map what
 replies we are getting and what's the next best thing to say — a flow chart I can
 visually see and interface with… if we map ~80% of where conversations go it stops
 needing agent input: pattern recognition + a semi-pre-arranged message."
 
-Deterministic, zero-LLM. Reads the Ashley-owned flow model (flows.json — patterns,
+Deterministic, zero-LLM. Reads the owner-defined flow model (flows.json — patterns,
 reads, pre-arranged next moves, forward branches) + LIVE reply data (messages +
 conversations mirror), classifies every reply by pattern (unmatched = 'unclassified',
 honestly — that bucket IS the roadmap to 80% coverage), and renders one self-contained
 interactive HTML: opener → branch (live counts + real reply texts) → pre-arranged next
 move → forward branches. The COVERAGE number at the top is the automation threshold.
 
-  python -m linkforge flows-chart [--since YYYY-MM-DD]
+  python -m engine flows-chart [--since YYYY-MM-DD]
 Config: dm_flows_path (flows.json), dm_flows_html (output; default next to flows.json).
 """
 from __future__ import annotations
@@ -157,7 +157,7 @@ font-size:13px}}
 <h1>DM Conversation Flows — pattern map &amp; live coverage</h1>
 <div class="sub">since {html.escape(live['since'])} · generated {html.escape(live['generated'])}
  · source of truth: <code>Resources/System/dm-flows/flows.json</code> (edit there, re-render with
- <code>python -m linkforge flows-chart</code>)</div>
+ <code>python -m engine flows-chart</code>)</div>
 <div class="kpis">
  <div class="kpi"><b>{cov_txt}</b><span>pattern coverage — at ~80% the basic flows go mechanical, zero LLM</span></div>
  <div class="kpi"><b>{live['total_replies']}</b><span>replies mapped</span></div>
@@ -219,7 +219,7 @@ def main() -> None:
     live = collect(since, flows)
     out = getattr(cfg, "dm_flows_html", "") or str(Path(fp).parent / "index.html")
     Path(out).write_text(render(flows, live), encoding="utf-8")
-    # THE 20% FLOW (Ashley 2026-07-14): unmatched replies awaiting us go to a review
+    # THE 20% FLOW (ruled 2026-07-14): unmatched replies awaiting us go to a review
     # queue the Overseer dispatches dm-conversation + James against (T2 drafts).
     review = [r for r in live["rows"] if r["awaiting_us"] and not r["branch"]]
     rq = DATA_DIR / "metrics" / "dm-review-queue.json"

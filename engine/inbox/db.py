@@ -1,13 +1,13 @@
-"""db.py — inboxforge's own local SQLite (no cloud, ever).
+"""db.py — the inbox half's own local SQLite (no cloud, ever).
 
 The inbox unit is the CONVERSATION (keyed by LinkedIn thread URN), optionally linked to
-a LinkForge lead post-merge (lead_id, dark until then). Tags/notes/snooze/archive live
+a the parent program lead post-merge (lead_id, dark until then). Tags/notes/snooze/archive live
 on the conversation so threads with no campaign lead are full CRM citizens. Schema is
-byte-compatible with linkforge/KONDO-STANDALONE-BUILD-PLAN.md §V3.3 so the later merge
-into LinkForge is an INSERT…SELECT, not a reconciliation.
+byte-compatible with the parent program/KONDO-STANDALONE-BUILD-PLAN.md §V3.3 so the later merge
+into the parent program is an INSERT…SELECT, not a reconciliation.
 
 v0.1 uses CREATE TABLE IF NOT EXISTS only (all tables are net-new). Column additions
-later follow LinkForge's guarded-ALTER pattern (PRAGMA table_info → ALTER if absent).
+later follow the parent program's guarded-ALTER pattern (PRAGMA table_info → ALTER if absent).
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS conversations (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     thread_urn    TEXT UNIQUE NOT NULL,
-    lead_id       INTEGER,                       -- FK -> linkforge leads, post-merge (nullable)
+    lead_id       INTEGER,                       -- FK -> the parent program leads, post-merge (nullable)
     participant_name        TEXT,
     participant_headline    TEXT,
     participant_profile_url TEXT,
@@ -99,7 +99,7 @@ def init() -> None:
     cx = connect()
     try:
         cx.executescript(SCHEMA)
-        # guarded ALTERs for columns added after v0.1 (LinkForge's migration pattern)
+        # guarded ALTERs for columns added after v0.1 (the parent program's migration pattern)
         cols = {r["name"] for r in cx.execute("PRAGMA table_info(conversations)")}
         if "participant_avatar" not in cols:
             cx.execute("ALTER TABLE conversations ADD COLUMN participant_avatar TEXT")

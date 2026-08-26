@@ -92,7 +92,7 @@ def which_computer():
     if not IS_WIN and not IS_MAC:
         say()
         say("  ! LinkChat has been run on Windows only. The Mac installer may work")
-        say("    here, but nobody has tried it. Message Ashley first.")
+        say("    here, but nobody has tried it. Ask whoever gave you this first.")
     return installer
 
 
@@ -285,7 +285,7 @@ def main():
             say("      run doctor.py and fix what it finds")
             say()
             say("  CLAUDE.md in this folder tells Claude what it may change and")
-            say("  what it must never touch. Send Ashley what Claude changed.")
+            say("  what it must never touch. Send whoever gave you this what Claude changed.")
     elif py_ok and parts_ok and browser_ok and crm_ok:
         say("  Nothing. LinkChat is installed and pointed at your CRM.")
         say()

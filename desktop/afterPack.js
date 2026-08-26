@@ -36,7 +36,7 @@ const path = require('path');
 exports.default = async function afterPack(context) {
   if (context.electronPlatformName !== 'darwin') return;
 
-  const appName = context.packager.appInfo.productFilename; // "LinkForge"
+  const appName = context.packager.appInfo.productFilename; // "the parent program"
   const appPath = path.join(context.appOutDir, `${appName}.app`);
   const entitlements = path.join(__dirname, 'entitlements.mac.plist');
 

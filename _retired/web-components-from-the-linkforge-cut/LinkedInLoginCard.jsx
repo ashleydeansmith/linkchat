@@ -49,7 +49,7 @@ export default function LinkedInLoginCard() {
             LinkedIn connected
           </div>
           <div className="muted" style={{ fontSize: 12.5 }}>
-            You're signed in. LinkForge will use this session on this machine only — you can close the browser window.
+            You're signed in. the parent program will use this session on this machine only — you can close the browser window.
           </div>
         </div>
       </div>

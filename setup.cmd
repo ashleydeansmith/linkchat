@@ -118,14 +118,14 @@ echo.
 echo   The parts installed but Python cannot find them. That usually means there
 echo   is more than one Python on this computer and they went into the other one.
 echo.
-echo   Send Ashley the last few lines above and the result of typing:  where python
+echo   Send the last few lines above, and the result of typing:  where python
 echo.
 pause
 exit /b 1
 
 :failed
 echo.
-echo   That did not finish. Send Ashley the last few lines above.
+echo   That did not finish. Send the last few lines above to whoever gave you this.
 echo.
 pause
 exit /b 1

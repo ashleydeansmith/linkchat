@@ -29,15 +29,15 @@ You need four:
 
 ### If you are on a Mac, read this first
 
-**Message Ashley before the call, not during it.** There is now a Mac installer in the
+**Tell whoever gave you this before the call, not during it.** There is now a Mac installer in the
 LinkChat folder — it is called `setup-mac.command` and you run that instead of `setup.cmd`.
 Everything after the install is identical: the same two screens, the same approval line,
 the same five checks.
 
 **Nobody has ever run LinkChat on a Mac.** It was written on 2026-08-25 and has never
 been run on the computer it is for. So do the install the day before, on your own, with
-Ashley on a message — not live on the call with eight people waiting, where a fault
-costs you the session. If it stops, send Ashley everything the window printed. That is
+them on a message — not live on the call with eight people waiting, where a fault
+costs you the session. If it stops, send whoever gave you this everything the window printed. That is
 useful rather than a nuisance, and it is how the Mac version gets finished.
 
 **Three places the Mac differs**, all of them handled by `setup-mac.command`:
@@ -93,15 +93,14 @@ When it finishes, **close the black window and open a new one**, then run
 
 ## Step 2 — Get LinkChat onto your computer
 
-Ashley will send you an invitation to a private page on GitHub. Accept it first — the
-next command will not work until you have.
+LinkChat is open. Anybody can download it, and there is nothing to be invited to.
 
 In the black window, type these two lines, pressing Enter after each:
 
     cd %USERPROFILE%\Documents
-    git clone https://github.com/ashleydeansmith/linkchat.git LinkChat
+    git clone https://github.com/OWNER/linkchat.git LinkChat
 
-- If it asks you to sign in to GitHub, sign in with the account Ashley invited.
+- It should not ask you to sign in. If it does, the address has been mistyped.
 - If it says `git` is not recognised, install Git from
   **https://git-scm.com/download/win**, accept every default, then close the black
   window, open a new one, and run the two lines again.
@@ -122,8 +121,8 @@ signed. Click **More info**, then **Run anyway**.
 
 When it finishes it says so, and there is now a **LinkChat icon on your desktop**.
 
-If it stops with a message instead, it tells you what to do about it. Send Ashley the
-last few lines in that window — they name the actual cause.
+If it stops with a message instead, it tells you what to do about it. Send the
+last few lines in that window on — they name the actual cause.
 
 ---
 
@@ -327,7 +326,7 @@ To see exactly what your copy can and cannot do, open the black window and type:
 
 It prints your CRM's location, how many people are in it, your daily limit and how much of
 it you have used, then a `yes` or `no` for reading, syncing and drafting, then a line for
-each part that is missing and what that part is for. Send Ashley that output if you are
+each part that is missing and what that part is for. Send whoever gave you this that output if you are
 not sure what it is telling you — it names the cause precisely.
 
 Reaching Layer 6 turns sending on. Nothing needs reinstalling.
@@ -349,7 +348,7 @@ It only looks. It installs nothing, changes nothing, opens no browser and sends 
 message to anybody, so it is safe to run at any point — including before you have
 installed anything and including when it is broken.
 
-**If you are stuck, run it and send Ashley what it printed.** That is more useful than
+**If you are stuck, run it and send whoever gave you this what it printed.** That is more useful than
 describing what happened, because it names the actual cause.
 
 ### Getting your own Claude to fix it
@@ -361,11 +360,11 @@ You have Claude Code. Open it **in the LinkChat folder** and say:
 There is a `CLAUDE.md` in that folder which Claude reads on its own. It tells Claude what
 it may change, and — more to the point — what it must never touch: the checks that stop a
 message going to the wrong person, your CRM records, and the tests. If a fix would need
-one of those weakened, Claude is told to stop and send you to Ashley instead.
+one of those weakened, Claude is told to stop and send you back to whoever gave you this instead.
 
 **This matters most on a Mac**, where you are the first person ever to run LinkChat.
 Something that stops you is likely to be real rather than your fault, and Claude has what
-it needs to find it. Send Ashley whatever it changed.
+it needs to find it. Send whoever gave you this whatever it changed.
 
 ### The usual ones
 
@@ -376,7 +375,7 @@ Open the black window, then:
     python -m engine desktop
 
 That runs the same program with its errors visible, and the message it prints is the
-answer. Send Ashley that message.
+answer. Send that message to whoever gave you this.
 
 **It says a part is missing when I open it.**
 Run the installer again — `setup.cmd` on Windows, `setup-mac.command` on a Mac. It is
@@ -391,7 +390,7 @@ again. The first press opens the browser; the second one reads your inbox.
 It is pointed somewhere that no longer has `_engine` and `People` inside it. Give it the
 path again.
 
-**Anything else.** Message Ashley with what you did and what it said back. The messages
+**Anything else.** Tell whoever gave you this what you did and what it said back. The messages
 this program prints are written to name the actual cause, so quoting one is usually
 enough.
 

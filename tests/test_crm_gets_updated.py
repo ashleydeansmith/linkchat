@@ -7,7 +7,7 @@ THE FAULT THIS EXISTS TO CATCH
 On 2026-08-25 a real message was sent to a real person, and afterwards the CRM
 could not say who it had gone to. The event log read:
 
-    {"type": "message_sent", "person": null, "identifiers": ["Shabina ..."]}
+    {"type": "message_sent", "person": null, "identifiers": ["Sabina ..."]}
 
 `person: null`, on every event LinkChat had ever written. The cause was not a
 bug in the CRM: its resolver only ever LOOKS UP a person, deliberately, because
@@ -176,12 +176,12 @@ def main() -> int:
             body = body.replace(t, first)
         return body
 
-    filled = fill("Good connecting with you {name}", "Mariia Potupchik")
+    filled = fill("Good connecting with you {name}", "Mariya Petrenko")
     check("the person's name is filled in",
-          "Mariia" in filled and not _unresolved(filled),
+          "Mariya" in filled and not _unresolved(filled),
           "came out as %r" % filled)
 
-    left = fill("{their build} - sounds cool!", "Mariia Potupchik")
+    left = fill("{their build} - sounds cool!", "Mariya Petrenko")
     check("a gap only a person can fill is still refused",
           bool(_unresolved(left)),
           "%r passed, so a message reading '{their build}' could reach somebody" % left)

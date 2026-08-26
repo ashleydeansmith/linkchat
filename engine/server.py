@@ -970,7 +970,7 @@ else:
 # ---------------------------------------------------------------------------
 # The window you double-click.
 #
-# Same shape as the one LinkForge opens: the engine runs on a background thread
+# Same shape as the one the parent program opens: the engine runs on a background thread
 # and a real native window owns the main one, so it has its own title bar and its
 # own icon in the taskbar rather than looking like a browser someone left open.
 # Started with pythonw, which is Python without a console, so no black box flashes
@@ -1011,7 +1011,7 @@ def run_desktop(host: str = "127.0.0.1", port: int = 8790) -> None:
         try:
             import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "Outliers.LinkChat.App")
+                "LinkChat.App")
         except Exception:
             pass
 

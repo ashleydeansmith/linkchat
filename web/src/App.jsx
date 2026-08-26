@@ -82,7 +82,7 @@ function Banner({ crm }) {
         <strong>Conversations did not start.</strong> The inbox below will look
         empty whatever is in your LinkedIn, because this half of the program is
         not running. Nothing you do here will fix it and nothing is lost —{" "}
-        send this line to Ashley: <code>{crm.conversations_fault}</code>
+        send this line on: <code>{crm.conversations_fault}</code>
       </div>
     );
   }

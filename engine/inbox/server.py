@@ -1,16 +1,16 @@
-"""server.py — the inbox / messaging API, as an APIRouter mounted into LinkForge.
+"""server.py — the inbox / messaging API, as an APIRouter mounted into the parent program.
 
-Stage 1 of the InboxForge merge. Originally a standalone FastAPI app on :8771; now an
-APIRouter(prefix="/api/inbox") that linkforge/server.py include_router()s into the ONE
-LinkForge process on :8770. Every route therefore lives under /api/inbox/* — which also
+Stage 1 of the the inbox half merge. Originally a standalone FastAPI app on :8771; now an
+APIRouter(prefix="/api/inbox") that the parent program's server include_router()s into the ONE
+the parent program process on :8770. Every route therefore lives under /api/inbox/* — which also
 de-collides the three that clashed with the engine API (/api/status, /api/sync,
 /api/export) by namespacing them to /api/inbox/{status,sync,export}.
 
 CRM writes (tags/notes/snooze/archive) are direct DB ops. The inbox SYNC and every
 SEND is a LANE: a read-only / send Playwright keeper drive, run as a SUBPROCESS so
 Playwright's sync API never touches the server's asyncio loop. The subprocess argv is
-built by linkforge.frozen.spawn_argv so it works both in dev (`python -m linkforge
-inbox-sync`) and frozen (`LinkForge.exe inbox-sync`).
+built by the frozen helper.spawn_argv so it works both in dev (`python -m engine
+inbox-sync`) and frozen (`the parent program.exe inbox-sync`).
 """
 from __future__ import annotations
 
@@ -45,10 +45,10 @@ def _cx():
 
 
 def _run_inbox_cmd(cmd: str, *args: str, timeout: int = 120) -> dict:
-    """Run a LinkForge inbox-* subcommand as a child process and return its RESULT line.
+    """Run a the parent program inbox-* subcommand as a child process and return its RESULT line.
 
-    Uses frozen.spawn_argv so the argv is correct in dev (python -m linkforge <cmd>) and
-    in a frozen build (LinkForge.exe <cmd>). cwd=_AUTOMATION keeps the dev module import
+    Uses frozen.spawn_argv so the argv is correct in dev (python -m engine <cmd>) and
+    in a frozen build (the parent program.exe <cmd>). cwd=_AUTOMATION keeps the dev module import
     working; it is harmless when frozen."""
     try:
         p = subprocess.run(frozen.spawn_argv(cmd, *args), cwd=str(_AUTOMATION),
@@ -283,7 +283,7 @@ def set_pin(conv_id: int, body: PinIn):
         cx.close()
 
 
-# --- cockpit send QUEUE (Ashley 2026-07-24: queue, don't block) --------------------------
+# --- cockpit send QUEUE (ruled 2026-07-24: queue, don't block) --------------------------
 # --- the background sender that used to live here ----------------------------
 #
 # It claimed jobs off a queue and ran a sending command, one at a time, waiting
@@ -865,7 +865,7 @@ def export(format: str = "csv"):
     w.writeheader()
     w.writerows(rows)
     return Response(buf.getvalue(), media_type="text/csv",
-                    headers={"Content-Disposition": "attachment; filename=inboxforge-export.csv"})
+                    headers={"Content-Disposition": "attachment; filename=the inbox half-export.csv"})
 
 
 # --- open a conversation (declared LAST: see the note near the top) ----------

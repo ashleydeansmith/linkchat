@@ -10,7 +10,7 @@ exporting a flow and importing it again produced a flow with every branch, every
 pattern, every link, and not one message.
 
 It was silent in the worst way. On 2026-08-25 the live v6.2 flow was carried out
-of LinkForge and into LinkChat: the import reported nine branches and twenty-nine
+of the parent program and into LinkChat: the import reported nine branches and twenty-nine
 links and looked complete. All ten locked messages were gone. The only trace was
 the guidance prose that survived, still instructing the reader to "send
 templates[0]" - pointing at something no longer in the file.

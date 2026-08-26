@@ -14,7 +14,7 @@ conversation but a clock time on one from today. So every conversation from
 today fell past the cut to a blunt 40-character slice and kept the timestamp,
 and the start of the message, inside the person's name:
 
-    "Malcom Ovwighose 10:42 AM 10:42 AM  You: You must be crazy snowed under?"
+    "Marcus Oyelaran 10:42 AM 10:42 AM  You: You must be crazy snowed under?"
 
 Found on 2026-08-25 by syncing a real inbox: eleven of twelve rows were from
 that day, so eleven of twelve names were wrong. It had gone unseen for months
@@ -28,8 +28,14 @@ name carrying a timestamp is a dirty record on both counts. The greeting itself
 survives, because first_name_of takes the first word, and that is checked here
 too so nobody assumes it.
 
-Every row below is verbatim from a real inbox. Add to them rather than
-inventing new shapes - invented rows are what hid this for months.
+Every row below keeps the SHAPE of a real inbox row exactly - the doubled clock
+time, the "You:" prefix, the preview running on past it, the "Status is online"
+lead-in. That shape is the whole point: rows invented from imagination would
+have read "Jane Bloggs Aug 14" and passed while the fault sat there for months.
+
+The NAMES are stand-ins. The real ones were somebody's actual LinkedIn
+connections, with fragments of their messages beside them, and this repository
+is public. Add rows by copying a real shape and changing the name.
 """
 from __future__ import annotations
 
@@ -54,17 +60,17 @@ def check(label: str, ok: bool, why: str = "") -> None:
 
 
 # (row as LinkedIn rendered it, the name it must yield)
-REAL_ROWS = [
+ROWS = [
     # --- from today: a clock time. These were all broken before 2026-08-25.
-    ("Malcom Ovwighose 10:42 AM 10:42 AM  You: You must be crazy snowed under?",
-     "Malcom Ovwighose"),
-    ("Marcin Mleczko 11:02 AM  You: https://example.com", "Marcin Mleczko"),
-    ("Rayhan Mahmood 12:17 PM  Rayhan: thanks for connecting", "Rayhan Mahmood"),
-    ("Louis Dunne 12:58 PM  You: And bring the deck", "Louis Dunne"),
-    ("Akshat Sharma 1:02 PM  You: You around?", "Akshat Sharma"),
-    ("Mariia Potupchik 1:04 PM  You: ok", "Mariia Potupchik"),
-    ("Vamshi Krishna Y 1:09 PM  Vamshi: hi", "Vamshi Krishna Y"),
-    ("Jeremy Shorter 3:09 PM 3:09 PM  You: yes", "Jeremy Shorter"),
+    ("Marcus Oyelaran 10:42 AM 10:42 AM  You: You must be crazy snowed under?",
+     "Marcus Oyelaran"),
+    ("Mateusz Wiercinski 11:02 AM  You: https://example.com", "Mateusz Wiercinski"),
+    ("Rayhan Mahfouz 12:17 PM  Rayhan: thanks for connecting", "Rayhan Mahfouz"),
+    ("Lewis Dunmore 12:58 PM  You: And bring the deck", "Lewis Dunmore"),
+    ("Aarav Shastri 1:02 PM  You: You around?", "Aarav Shastri"),
+    ("Mariya Petrenko 1:04 PM  You: ok", "Mariya Petrenko"),
+    ("Vikram Chandra R 1:09 PM  Vikram: hi", "Vikram Chandra R"),
+    ("Jeremy Shawcross 3:09 PM 3:09 PM  You: yes", "Jeremy Shawcross"),
     # --- older: a month. These already worked and must not regress.
     ("Jane Bloggs Aug 14  You: thanks", "Jane Bloggs"),
     ("Status is online Peter Smith Jul 2  Peter: hello", "Peter Smith"),
@@ -80,16 +86,16 @@ def main() -> int:
     print("=" * 72)
 
     wrong = []
-    for row, want in REAL_ROWS:
+    for row, want in ROWS:
         got = _row_name(row)
         if got != want:
             wrong.append("%r -> %r, wanted %r" % (row[:46], got, want))
-    check("every real inbox row gives the right name (%d rows)" % len(REAL_ROWS),
+    check("every real inbox row gives the right name (%d rows)" % len(ROWS),
           not wrong, "\n".join(wrong))
 
     # The properties that matter even for a row shape nobody has seen yet.
     dirty = []
-    for row, _ in REAL_ROWS:
+    for row, _ in ROWS:
         got = _row_name(row)
         if any(ch.isdigit() for ch in got):
             dirty.append("%r keeps a digit: %r" % (row[:40], got))
@@ -104,7 +110,7 @@ def main() -> int:
 
     # The greeting is taken from the name, so it is checked rather than assumed.
     bad_greet = []
-    for row, want in REAL_ROWS:
+    for row, want in ROWS:
         first = names.first_name_of(_row_name(row))
         if not first or first != want.split()[0]:
             bad_greet.append("%r would be greeted %r, wanted %r"

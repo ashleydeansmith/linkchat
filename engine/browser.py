@@ -1,4 +1,4 @@
-"""browser.py — ONE persistent LinkedIn Chromium for LinkForge (the LH2 model).
+"""browser.py — ONE persistent LinkedIn Chromium for the parent program (the LH2 model).
 
 THE PROBLEM this solves
 -----------------------
@@ -59,7 +59,7 @@ PORT = 9334                       # LinkChat's own door onto its own browser.
 #
 # THIS NUMBER HAS TO BE DIFFERENT FROM EVERY OTHER PROGRAM ON THE MACHINE.
 # It was the same as the one the program LinkChat was cut out of, and both were
-# running on Ashley's computer at once. LinkChat asked for "the browser at that
+# running on one particular computer at once. LinkChat asked for "the browser at that
 # door" and got the OTHER program's browser, signed into the OTHER account, and
 # drove it - opened conversations in it, and would have typed into it. It only
 # shows up on a machine where both are installed, which is exactly the machine
@@ -329,7 +329,7 @@ def status() -> dict:
 
 def _list_keeper_pids() -> list[int]:
     """PIDs of every running keeper process (command line carries '--keep'). Matches DEV
-    (`-m linkforge.browser --keep`) and FROZEN (`LinkForge.exe browser --keep`) alike, so
+    (`-m engine.browser --keep`) and FROZEN (`the parent program.exe browser --keep`) alike, so
     reap/single-instance still works frozen. Now psutil-based (cross-platform)."""
     return pc.list_keeper_pids()
 
@@ -408,7 +408,7 @@ def ensure_keeper(wait_sec: float = 35.0, force: bool = False) -> str | None:
     try:
         from engine import ops as _ops
         ops = _ops
-        got = ops.acquire_lock("lf-keeper-spawn", "linkforge-browser", wait_sec=45)
+        got = ops.acquire_lock("keeper-spawn", "linkchat-browser", wait_sec=45)
     except Exception:
         ops, got = None, True   # lock unavailable — proceed best-effort
     try:
@@ -462,8 +462,8 @@ def ensure_keeper(wait_sec: float = 35.0, force: bool = False) -> str | None:
             pass
         try:
             subprocess.Popen(
-                keeper_argv(),                             # frozen: [exe, browser, --keep]; dev: [pythonw, -m, linkforge.browser, --keep]
-                cwd=str(PKG_DIR.parent),                   # dev: so `-m linkforge.browser` resolves; ignored when frozen
+                keeper_argv(),                             # frozen: [exe, browser, --keep]; dev: [pythonw, -m, engine.browser, --keep]
+                cwd=str(PKG_DIR.parent),                   # dev: so `-m engine.browser` resolves; ignored when frozen
                 close_fds=True,
                 **pc.detached_no_window_popen_kwargs(),    # win: DETACHED|NO_WINDOW; posix: start_new_session
             )
@@ -480,7 +480,7 @@ def ensure_keeper(wait_sec: float = 35.0, force: bool = False) -> str | None:
     finally:
         if ops is not None and got:
             try:
-                ops.release_lock("lf-keeper-spawn", "linkforge-browser")
+                ops.release_lock("keeper-spawn", "linkchat-browser")
             except Exception:
                 pass
 
@@ -733,7 +733,7 @@ _OVERLAY_JS = r"""
   var el = document.getElementById(ID);
   if (locked && !el && (document.body || document.documentElement)) {
     el = document.createElement('div'); el.id = ID;
-    // Light GREY wash (no blur) so the page stays fully readable — you can watch LinkForge
+    // Light GREY wash (no blur) so the page stays fully readable — you can watch the parent program
     // type and click — plus a small corner toast. Click-through (pointer-events:none).
     el.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none;'
       + 'background:rgba(64,72,72,.22);font-family:Inter,Segoe UI,system-ui,sans-serif';
@@ -741,7 +741,7 @@ _OVERLAY_JS = r"""
       + 'max-width:290px;background:rgba(11,110,108,.97);color:#fff;padding:13px 16px;border-radius:13px;'
       + 'box-shadow:0 10px 30px rgba(0,0,0,.35)">'
       + '<div style="font-size:23px;line-height:1">&#128274;</div>'
-      + '<div><div style="font-size:14px;font-weight:700;letter-spacing:-.01em">LinkForge is working</div>'
+      + '<div><div style="font-size:14px;font-weight:700;letter-spacing:-.01em">the parent program is working</div>'
       + '<div style="font-size:12px;opacity:.85;margin-top:2px;line-height:1.4">Browser locked &middot; unlock in the app to take over</div>'
       + '</div></div>';
     (document.body || document.documentElement).appendChild(el);
@@ -908,8 +908,8 @@ def _keeper_main() -> None:
         # to flag). BUT on macOS, where the tester's everyday browser is often Chrome TOO, driving
         # the real Chrome collides with their personal Chrome (shared processes, windows, automation
         # flags) and makes their browser buggy. So on macOS use the ISOLATED bundled Chromium — it's
-        # a different binary from Google Chrome.app, so LinkForge never touches the personal browser
-        # (Ashley's Browser-Isolation doctrine). Real Chrome stays the stealth default on Windows.
+        # a different binary from Google Chrome.app, so the parent program never touches the personal browser
+        # (the browser-isolation rule). Real Chrome stays the stealth default on Windows.
         try:
             if pc.IS_MAC:
                 ctx = pw.chromium.launch_persistent_context(str(lb.SESSION_DIR), **_kw)
@@ -1188,7 +1188,7 @@ def main() -> None:
     elif "--lock-state" in sys.argv:
         print(json.dumps(lock_state()))
     else:
-        print("usage: python -m linkforge.browser "
+        print("usage: python -m engine.browser "
               "--keep | --start | --stop | --status | --reap | --lock | --unlock | --lock-state")
 
 

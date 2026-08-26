@@ -7,15 +7,15 @@ Why this exists (2026-06-02):
   `firefox-read`). That profile launched then instantly exited (exitCode=0),
   so every posts/jobs/careers scan silently returned empty and capped every
   prospect to "Warm". Worse, Playwright's Firefox is also `firefox.exe`, so a
-  name-scoped process kill could not tell it apart from Ashley's PERSONAL
+  name-scoped process kill could not tell it apart from a PERSONAL
   Firefox — and on 2026-06-02 a `Get-Process firefox | Stop-Process` took his
   browser down with it.
 
 The fix / standing rule:
-  - Automation is **Chromium only**. Ashley's personal browsing stays **Firefox
+  - Automation is **Chromium only**. personal browsing stays **Firefox
     only**. They can never be confused again — by engine AND by path.
   - All LinkedIn browser work (reads + sends) shares ONE logged-in Chromium
-    persistent profile: `Nexus/automation/linkedin-session` (the proven
+    persistent profile: `the automation folder/linkedin-session` (the proven
     `chromium-send` session that already sends DMs and scrapes conversations).
   - Because every caller shares that one profile dir, every caller MUST hold the
     same `linkedin_ops` lock — READ_LOCK below ("chromium-send") — so reads and
@@ -33,12 +33,12 @@ from pathlib import Path
 # The one logged-in LinkedIn Chromium session. Same dir the DM sender and the
 # conversation scraper use (chromium-send). One profile dir => one ops lock.
 #
-# DEV (source tree): the shared Nexus path — the 15+ dev-fleet importers keep using
-#   Ashley's logged-in session exactly as before, UNCHANGED.
+# DEV (source tree): the shared the automation folder path — the 15+ dev-fleet importers keep using
+#   the developer's logged-in session exactly as before, UNCHANGED.
 # FROZEN (packaged app): a PER-USER session under the OS user-data base, so every
-#   beta tester signs into THEIR OWN LinkedIn. Ashley's absolute dev path does not
+#   beta tester signs into THEIR OWN LinkedIn. an absolute dev path does not
 #   exist on a tester's machine; without this, the keeper created an empty profile
-#   and every lane saw "not logged in" (the §0a "only works for Ashley" defect).
+#   and every lane saw "not logged in" (the §0a "only works for its author" defect).
 #   Mirrors platform_compat.user_data_base() / __init__.py's DATA_DIR redirect, but
 #   kept dependency-free — this module is shared infra dev scripts import directly.
 if getattr(sys, "frozen", False):
@@ -83,7 +83,7 @@ class KeeperUnavailable(RuntimeError):
 
     Raised instead of silently launching a competing browser on the keeper's profile.
     See open_read_context() for why that silent fallback was the single biggest source
-    of lane failure in LinkForge's history.
+    of lane failure in the parent program's history.
     """
 
 
@@ -96,10 +96,10 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
 
     Caller MUST already hold the `READ_LOCK` ops lock. Returns the BrowserContext;
     caller drives `context.pages[0]` / `context.new_page()` and closes via
-    `linkforge.safe_close()` in a finally block.
+    `the parent program.safe_close()` in a finally block.
 
     SINGLE-INSTANCE (LH2 model, 2026-06-13): by default this ATTACHES over CDP to the
-    one long-lived 'keeper' Chromium (see linkforge/browser.py) instead of launching a
+    one long-lived 'keeper' Chromium (see the parent program/browser.py) instead of launching a
     fresh browser per lane — so the browser stays alive and we navigate within it like
     a human, rather than open/close/open/close. Pass shared=False to force a private
     launch.
@@ -122,7 +122,7 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
     reaping the keeper and burning the rest of the batch.
     """
     if shared:
-        from linkforge import browser as _lfb
+        from the parent program import browser as _lfb
         ctx = None
         try:
             ctx = _lfb.connect(pw)        # NB: returns None on CDP failure, does not raise
@@ -178,7 +178,7 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
         # `*ms-playwright*` chrome.exe. If a keeper came up in the gap, reaping here would
         # kill it and re-open the exact death spiral above. No keeper => nothing to protect.
         try:
-            from linkforge import browser as _lfb
+            from the parent program import browser as _lfb
             if _lfb.keeper_running():
                 raise KeeperUnavailable(
                     "A keeper browser is running, so the private-launch reaper is refused "
@@ -188,7 +188,7 @@ def open_read_context(pw, headless: bool = False, shared: bool = True):
         except KeeperUnavailable:
             raise
         except Exception:
-            pass       # linkforge.browser unimportable => no keeper can exist => reap is safe
+            pass       # engine.browser unimportable => no keeper can exist => reap is safe
         reap_playwright_chromium()
         import time as _t
         _t.sleep(1.5)

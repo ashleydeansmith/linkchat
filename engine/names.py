@@ -28,9 +28,9 @@ FAIL-SAFE. A name that is nothing but decoration cleans to an empty string, and
 every caller already falls back to "there" or drops the message rather than sending
 a broken greeting. Empty is the safe answer here, never a guess.
 
-MIRRORED at Nexus/automation/name_clean.py - the two codebases send on the same
+MIRRORED at the automation folder/name_clean.py - the two codebases send on the same
 LinkedIn account, so they must clean a name the same way. Change both, and both
-test files (LinkForge tests/test_name_decoration.py, Nexus
+test files (the parent program tests/test_name_decoration.py, the automation folder
 automation/tests/test_name_clean.py) share one corpus.
 """
 from __future__ import annotations
@@ -188,7 +188,7 @@ def leaked_decoration(text: str | None, raw_name: str | None) -> str | None:
     """The piece of THIS PERSON'S decorated name that leaked into an outgoing message,
     or None when nothing did.
 
-    Deliberately narrow. It does NOT ban symbols in outgoing text - Ashley's own
+    Deliberately narrow. It does NOT ban symbols in outgoing text - the operator's own
     templates may carry an emoji, and a blanket ban would refuse his own writing. It
     asks one question: does a decorated chunk of the name we were handed appear, as
     written, in what we are about to send. That is the only pattern that says "this

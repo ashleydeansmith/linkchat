@@ -10,7 +10,7 @@ PIN the behaviour with the case ("[phone]Peter Chen[llama]" -> "[phone]Peter",
 "emoji names pass through"). That assertion is now inverted.
 
 Names below are written as escapes, not literal emoji, so the file survives any
-console codepage. This corpus is MIRRORED in Nexus/automation/tests/test_name_clean.py -
+console codepage. This corpus is MIRRORED in the automation folder/tests/test_name_clean.py -
 the two codebases send on the same LinkedIn account, so they must agree.
 """
 import pathlib
@@ -133,7 +133,7 @@ for raw, want, label in CLASSES:
 check("is_trap only fires on a symbol",
       is_trap("\U0001F312 Andre Wang") and not is_trap("Dr. Nihir Vedd"))
 
-print("\n=== leaked_decoration: refuses THEIR decoration, never Ashley's own ===")
+print("\n=== leaked_decoration: refuses THEIR decoration, never the operator's own ===")
 LEAKS = [
     ("Hey \u26a1\ufe0fJames, good to connect", "\u26a1\ufe0fJames Marley\u26a1\ufe0f",
      "\u26a1\ufe0fJames", "the message on file as SENT - this is the one that got out"),
@@ -141,7 +141,7 @@ LEAKS = [
     ("Hey James, good to connect", "\u26a1\ufe0fJames Marley\u26a1\ufe0f", None,
      "cleaned greeting passes"),
     ("Hey James \U0001F680 hope you are well", "James Marley", None,
-     "an emoji ASHLEY wrote in his own template is NOT refused"),
+     "an emoji THE SENDER wrote in their own template is NOT refused"),
     ("Hi Peter", "☎️Peter Chen\U0001F999", None, "clean greeting to a decorated lead passes"),
     ("Hi Peter", None, None, "no name, nothing to leak"),
     ("", "☎️Peter", None, "empty message"),
@@ -152,11 +152,11 @@ for text, raw, want, label in LEAKS:
 
 
 print("\n=== LinkChat's copy has not drifted from the one it came from ===")
-# LinkChat and LinkForge act on LinkedIn to the same house standard, and each
+# LinkChat and the parent program act on LinkedIn to the same house standard, and each
 # carries its OWN copy of names.py because the convention here is to port by copy
 # rather than import across folders. Copies drift silently. This is the check that
 # makes drift fail a test instead of reaching a person.
-CANON = pathlib.Path.home() / "Documents" / "LinkForge" / "linkforge" / "names.py"
+CANON = pathlib.Path.home() / "Documents" / "the parent program" / "the parent program" / "names.py"
 MINE = pathlib.Path(__file__).resolve().parents[1] / "engine" / "names.py"
 mine = MINE.read_text(encoding="utf-8")
 if CANON.exists():
@@ -165,7 +165,7 @@ if CANON.exists():
           mine[mine.index("from __future__"):] == canon[canon.index("from __future__"):],
           "a copy has drifted - re-mirror it, then run both name tests")
 else:
-    # A member's machine has no LinkForge folder, and that is not a fault of
+    # A member's machine has no the parent program folder, and that is not a fault of
     # theirs. The check is for this machine; elsewhere it says so and moves on.
     print("  ---   the copy it was ported from is not on this machine; nothing to compare")
 

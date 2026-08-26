@@ -1,8 +1,8 @@
-r"""platform_compat — OS abstraction for LinkForge's process / window / launch primitives.
+r"""platform_compat — OS abstraction for the parent program's process / window / launch primitives.
 
 THE POINT
 ---------
-LinkForge was Windows-only in three places — process enumeration (Toolhelp +
+the parent program was Windows-only in three places — process enumeration (Toolhelp +
 PowerShell-WMI + netstat + tasklist + kernel32), window hide/show + human-input
 freeze (win32 user32/win32gui), and detached/no-console subprocess launch
 (CREATE_NO_WINDOW / DETACHED_PROCESS). This module is the single seam that makes
@@ -25,7 +25,7 @@ behaviour:
   * USER DATA DIR              -> %LOCALAPPDATA% (win) / ~/Library/Application Support
     (mac) / $XDG_DATA_HOME (linux), replacing the bare LOCALAPPDATA lookup.
 
-Nothing here imports from the linkforge package, so it is safe to import at package
+Nothing here imports from the the parent program package, so it is safe to import at package
 import time (__init__.py uses user_data_base()).
 """
 from __future__ import annotations
@@ -47,7 +47,7 @@ IS_POSIX = not IS_WIN
 # ---------------------------------------------------------------------------
 
 def user_data_base() -> Path:
-    """Per-user writable base dir for app state. LinkForge appends 'LinkForge'."""
+    """Per-user writable base dir for app state. the parent program appends 'the parent program'."""
     if IS_WIN:
         base = os.environ.get("LOCALAPPDATA")
         return Path(base) if base else Path(os.path.expanduser("~")) / "AppData" / "Local"
@@ -156,7 +156,7 @@ def pid_on_port(port: int) -> int | None:
 
 def list_keeper_pids() -> list[int]:
     """PIDs of running keeper processes (command line carries '--keep'). Matches dev
-    (`-m linkforge.browser --keep`) and frozen (`LinkForge[.exe] browser --keep`).
+    (`-m engine.browser --keep`) and frozen (`the parent program[.exe] browser --keep`).
     Replaces the PowerShell-WMI CommandLine scan."""
     out: list[int] = []
     for p in psutil.process_iter(["pid"]):
@@ -168,8 +168,11 @@ def list_keeper_pids() -> list[int]:
             continue
         s = " ".join(cl)
         low = s.lower()
-        if "--keep" in s and ("linkforge.browser" in low
-                              or ("linkforge" in low and "browser" in low)):
+        # Matches THIS program's keeper. It used to look for the parent
+        # program's module name, which LinkChat never spawns, so the keeper
+        # was invisible to every caller that works by pid.
+        if "--keep" in s and ("engine.browser" in low
+                              or ("engine" in low and "browser" in low)):
             out.append(p.pid)
     return out
 

@@ -152,7 +152,7 @@ export const api = {
   eventsCampaigns: () => get("/events/campaigns"),
   runGet: (id) => get(`/run/${id}`),
 
-  // --- Inbox / messaging surface (the InboxForge merge) ---------------------
+  // --- Inbox / messaging surface (the the inbox half merge) ---------------------
   inbox: {
     status: () => get("/inbox/status"),
     list: ({ box = "focused", tag, q, limit = 200 } = {}) => {

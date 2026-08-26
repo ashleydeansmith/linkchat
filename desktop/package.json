@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "LinkChat desktop window - your conversations, and the sequences that run off them.",
-  "author": "Ashley Dean Smith",
+  "author": "LinkChat",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -15,7 +15,7 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.ashleydeansmith.linkchat",
+    "appId": "com.linkchat.app",
     "productName": "LinkChat",
     "afterPack": "./afterPack.js",
     "files": [

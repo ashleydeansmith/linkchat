@@ -1,11 +1,11 @@
-"""db.py — LinkForge operational state (SQLite).
+"""db.py — the parent program operational state (SQLite).
 
 This is the ENGINE's own state, not the CRM. The human-readable CRM is Obsidian
 (People notes), written by the CRM lane in a later phase. This DB tracks who's
 been invited, invite ages (for the withdraw lane), where each lead sits in a
 drip sequence, and an app-local audit trail.
 
-One file: linkforge/data/linkforge.db. Schema is created idempotently
+One file: the parent program/data/the parent program.db. Schema is created idempotently
 (CREATE TABLE IF NOT EXISTS), so init-db is safe to re-run.
 """
 from __future__ import annotations
@@ -126,7 +126,7 @@ _SCHEMA_INITING = False
 
 def _ensure_schema() -> None:
     """Create/migrate the schema before any query runs. Fresh installs used to open an
-    empty linkforge.db (sqlite creates the file on connect) without ever running init_db,
+    empty the parent program.db (sqlite creates the file on connect) without ever running init_db,
     which broke /api/safety and POST /api/campaign with 'no such table'. Idempotent."""
     global _SCHEMA_READY, _SCHEMA_INITING
     if _SCHEMA_READY or _SCHEMA_INITING:
@@ -219,7 +219,7 @@ _SEQSTATE_MIGRATIONS = {
 
 # Target schema version. BUMP THIS whenever _migrate adds or changes anything. The init
 # runner (init_db) reads/writes PRAGMA user_version and, before applying a migration to a
-# NON-fresh DB, copies linkforge.db -> linkforge.db.bak.v{old}. A failed migration is then
+# NON-fresh DB, copies the parent program.db -> the parent program.db.bak.v{old}. A failed migration is then
 # auto-restored from that copy; the .bak files also allow a manual roll-back after a bad
 # auto-update. This is the hard prerequisite the auto-update phase (P4) edges on.
 SCHEMA_VERSION = 9   # v9: leads.connected_on / leads.connected_rank — when someone
@@ -229,7 +229,7 @@ SCHEMA_VERSION = 9   # v9: leads.connected_on / leads.connected_rank — when so
                      #     event, so a re-run never invites the same person twice and the
                      #     same person can still be invited to a different event.
                      # v7: red_list — the global do-not-contact table (RED-LIST-BUILD-PLAN
-                     #     2026-07-22). A cache of LinkForge/red-list.json, re-synced at the
+                     #     2026-07-22). A cache of the parent program/red-list.json, re-synced at the
                      #     start of every lane run. Keyed on BOTH URL namespaces (vanity
                      #     /in/<slug> + member-URN /in/ACoAA…) + lead_id + name so a
                      #     person red-listed by any identifier is caught on every lane.
@@ -238,13 +238,13 @@ SCHEMA_VERSION = 9   # v9: leads.connected_on / leads.connected_rank — when so
                      #     arm assignments (plan §5.1 + §6c hardening, 2026-07-15).
                      # v5: leads.last_seen_on_search_at + sequence_state.fail_count
                      #     (connect-lane rebuild + sequence dead-letter, 2026-07-13).
-                     # v4: bridge_notes + bridge_field_state (the Nexus CRM bridge).
+                     # v4: bridge_notes + bridge_field_state (the the automation folder CRM bridge).
                      # v3: leads.is_connection — the connect lane must never invite a
                      #     1st-degree connection.
                      # v2: ICP scorer columns icp_score/icp_tier/icp_reason.
 
 
-# --- Nexus CRM bridge (Build Plan V3, 2026-07-10) --------------------------------
+# --- the automation folder CRM bridge (Build Plan V3, 2026-07-10) --------------------------------
 # Identity is the CANONICAL URL, never leads.id: `id` is an AUTOINCREMENT surrogate
 # reassigned on any DB merge or restore (the two installs were merged 2026-07-08),
 # while db.py's own schema comment calls profile_url "the identity".
@@ -384,11 +384,11 @@ CREATE TABLE IF NOT EXISTS flow_arm_assignments (
 
 
 # --- Global red-list (do-not-contact) — RED-LIST-BUILD-PLAN V3 (2026-07-22) -------
-# The `red_list` table is a CACHE of LinkForge/red-list.json (the human-editable SoT),
+# The `red_list` table is a CACHE of the parent program/red-list.json (the human-editable SoT),
 # re-imported at the start of every lane run so it can never drift from the file.
 #
 # The two-namespace trap it defends against: the same person carries TWO URL strings —
-# the vanity `/in/<slug>` (linkforge.db `leads.profile_url`) and the member-URN
+# the vanity `/in/<slug>` (the parent program.db `leads.profile_url`) and the member-URN
 # `/in/ACoAA…` (conversations.db `participant_profile_url`). A red list keyed on only
 # one silently misses the inbox/conversation lane, so BOTH forms are stored + matched,
 # alongside lead_id and name. Adding a person once, by ANY identifier, is enough forever.
@@ -398,7 +398,7 @@ CREATE TABLE IF NOT EXISTS red_list (
     full_name   TEXT,
     canon_url   TEXT,          -- vanity  https://www.linkedin.com/in/<slug>
     member_urn  TEXT,          -- member  https://www.linkedin.com/in/ACoAA…
-    lead_id     INTEGER,       -- linkforge.db leads.id when known (advisory; surrogate)
+    lead_id     INTEGER,       -- the parent program.db leads.id when known (advisory; surrogate)
     reason      TEXT,
     category    TEXT NOT NULL DEFAULT 'other',   -- friend | client | anti-fit | other
     added_at    TEXT NOT NULL
@@ -481,7 +481,7 @@ def init_db() -> None:
 
     P3 (migration safety) — the hard prerequisite for auto-update: a schema change shipped
     in an update can never brick a tester's data. A NON-fresh DB that is behind SCHEMA_VERSION
-    is COPIED to linkforge.db.bak.v{old} before any ALTER; if the migration throws, the copy
+    is COPIED to the parent program.db.bak.v{old} before any ALTER; if the migration throws, the copy
     is restored automatically and the error re-raised. Fresh DBs need no backup."""
     import shutil
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -1153,7 +1153,7 @@ def reset_all(keep_campaigns: bool = False) -> dict:
     from datetime import datetime
     backup = None
     if DB_PATH.exists():
-        backup = DB_PATH.with_name(f"linkforge-backup-{datetime.now():%Y%m%d-%H%M%S-%f}.db")
+        backup = DB_PATH.with_name(f"backup-{datetime.now():%Y%m%d-%H%M%S-%f}.db")
         shutil.copy2(DB_PATH, backup)
     removed = {}
     with connect() as conn:

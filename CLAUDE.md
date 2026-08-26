@@ -1,7 +1,6 @@
 # LinkChat — instructions for Claude
 
-You are working inside a copy of **LinkChat** on the machine of somebody in the Outliers
-accelerator. This file loads on its own when they open Claude Code in this folder.
+You are working inside a copy of **LinkChat** on somebody's own computer. This file loads on its own when they open Claude Code in this folder.
 
 **Read this before you change anything.** LinkChat sends real messages to real people on
 LinkedIn under this person's name. Most of what follows is about what you must not do.
@@ -47,7 +46,7 @@ to let one message through then lets everything through, and nobody finds out un
 message reaches somebody it should not have.
 
 If a fix seems to require touching a check: **stop, change nothing, and tell them to send
-Ashley what you found.** That is the correct outcome, not a failure to solve it.
+what you found upstream.** That is the correct outcome, not a failure to solve it.
 
 ### Also never
 
@@ -64,7 +63,7 @@ Ashley what you found.** That is the correct outcome, not a failure to solve it.
   times. There is a test that refuses any absolute path under a home folder — do not work
   around it.
 - **Never commit or push.** This person has read-only access to the repository, so a push
-  will fail anyway. See *Getting a fix back to Ashley* below.
+  will fail anyway. See *Getting a fix back upstream* below.
 
 ---
 
@@ -119,7 +118,7 @@ Windows path is the proven one and it is a day from being used by nine people.
   the browser's own remote control rather than through macOS, in
   `browser._mac_window_state`. It is written and it has never been run. If the sign-in
   window never appears, that is the first place to look — and it is a real finding worth
-  sending to Ashley.
+  sending upstream.
 
 ---
 
@@ -139,10 +138,10 @@ send.
 
 ---
 
-## Getting a fix back to Ashley
+## Getting a fix back upstream
 
 This person can read the repository, not write to it. So a fix lives on their machine
-until Ashley puts it in. Give them this, ready to send:
+until it is merged upstream. Give them this, ready to send:
 
 1. **What was wrong**, in one or two plain sentences — what they saw, not what you infer.
 2. **The exact output** of `doctor.py` from before the fix.
@@ -152,7 +151,7 @@ until Ashley puts it in. Give them this, ready to send:
 
 4. **Whether `python tests/run_all.py` passes** after it.
 
-Say plainly if you could not fix it. An accurate description of a fault Ashley can
+Say plainly if you could not fix it. An accurate description of a fault the maintainer can
 reproduce is worth more than a workaround nobody can check — and on a Mac, being the
 first person to hit something is useful information rather than a nuisance.
 

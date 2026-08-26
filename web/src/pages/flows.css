@@ -1,4 +1,4 @@
-/* flows.css — ConversationForge editor (F2), themed to LinkForge's token system. */
+/* flows.css — ConversationForge editor (F2), themed to the token system. */
 .cf-page { display: flex; flex-direction: column; gap: 10px; height: calc(100vh - 110px); }
 
 /* version bar */

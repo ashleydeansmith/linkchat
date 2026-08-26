@@ -1,14 +1,14 @@
-"""config.py — LinkForge configuration with conservative, LinkedIn-safe defaults.
+"""config.py — the parent program configuration with conservative, LinkedIn-safe defaults.
 
 Defaults are deliberately CAUTIOUS (safety-first). Override any field by writing
-linkforge/config.json (only the keys you want to change). Two master switches:
+the parent program/config.json (only the keys you want to change). Two master switches:
 
     enabled : False  -> the engine performs NO actions at all (hard off)
     dry_run : True   -> the engine plans + logs what it WOULD do, but never
                         types/clicks/sends on LinkedIn
 
-Both must be flipped before LinkForge can act. Caps below are per the SHARED
-linkedin_ops budget (LinkForge logs through it), plus LinkForge's own daily/weekly
+Both must be flipped before the parent program can act. Caps below are per the SHARED
+linkedin_ops budget (the parent program logs through it), plus the parent program's own daily/weekly
 ceilings enforced in safety.py.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ class Config:
     long_pause_min_sec: int = 300
     long_pause_max_sec: int = 900
 
-    # --- LinkForge daily caps (per action, local day) ----------------------
+    # --- the parent program daily caps (per action, local day) ----------------------
     # action names: connect, withdraw, message, profile_view, inmail
     # Defaults sit AT OR UNDER the tightest plan's (Basic/Free) safe ceilings, so a fresh
     # install never boots into its own red zone (LF-006). Basic has NO InMail credits, so
@@ -57,7 +57,7 @@ class Config:
         "inmail": 0,
         "event_invite": 50,    # event invites are a SEPARATE ~1000/wk LinkedIn budget; stay well under
     })
-    # --- LinkForge trailing-7-day caps (LinkedIn watches weekly invite volume)
+    # --- the parent program trailing-7-day caps (LinkedIn watches weekly invite volume)
     weekly_caps: dict[str, int] = field(default_factory=lambda: {
         "connect": 80,
         "message": 90,
@@ -79,7 +79,7 @@ class Config:
     max_leads_per_harvest: int = 50
 
     # --- V1 vault import (optional, per-user data source; V2 replaces with harvest) --
-    # MUST default empty: these are an individual user's own vault paths. Hardcoding Ashley's
+    # MUST default empty: these are an individual user's own vault paths. Hardcoding one person's
     # personal Windows paths here shipped them into every tester's config.json (incl. Mac, where
     # they don't even resolve). Each user points these at their own vault, or leaves them empty.
     vault_people_dir: str = ""
@@ -101,7 +101,7 @@ class Config:
 
     # --- watchdog (SHOULD-vs-DID monitor, 2026-07-14) ------------------------
     # Personal-install only: absolute path of a markdown inbox that gets one line per
-    # discrepancy batch (Ashley: AI/Signals/Recommendations-Inbox.md -> Jeeves 07:30
+    # discrepancy batch (a downstream inbox digest
     # brief). Empty (the default) = queue file only, no vault dependency in core.
     watchdog_inbox_path: str = ""
 
@@ -109,7 +109,7 @@ class Config:
     # markdown for the sales layer. Empty = data/metrics only (no vault dependency).
     metrics_report_dir: str = ""
 
-    # DM conversation-flow chart (2026-07-14): the Ashley-owned flow model + the
+    # DM conversation-flow chart (2026-07-14): the owner-defined flow model + the
     # rendered interactive chart. Empty = data dir defaults (no vault dependency).
     dm_flows_path: str = ""
     dm_flows_html: str = ""
@@ -123,7 +123,7 @@ class Config:
     flows_account_id: str = "default"
     # Booked-call FILE CONTRACT (plan §5.4): meeting-triage (the fleet agent that
     # already reads Fathom) appends {name, at, source, ref?} lines to this JSONL;
-    # LinkForge only READS it — it must never touch Fathom itself (single-browser
+    # the parent program only READS it — it must never touch Fathom itself (single-browser
     # doctrine + domain isolation). Empty = data/meetings-feed.jsonl.
     meetings_feed_path: str = ""
 
@@ -174,7 +174,7 @@ class Config:
     def write_template(self) -> None:
         """Write the current defaults to config.json as an editable starting point."""
         data = asdict(self)
-        data["_note"] = ("LinkForge config. Flip enabled+dry_run to arm. "
+        data["_note"] = ("the parent program config. Flip enabled+dry_run to arm. "
                          "Caps are safety-first; raise slowly only after clean runs.")
         CONFIG_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
 

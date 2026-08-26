@@ -148,7 +148,7 @@ check("LinkChat names a browser door", mine is not None)
 # The program LinkChat was cut out of lives on this machine, and both run at
 # once. On a member's computer it is not there, and then there is nothing to
 # collide with and nothing to check.
-NEIGHBOUR = Path.home() / "Documents" / "LinkForge" / "linkforge" / "browser.py"
+NEIGHBOUR = Path.home() / "Documents" / "the parent program" / "the parent program" / "browser.py"
 if mine and NEIGHBOUR.exists():
     theirs = re.search(r"^PORT\s*=\s*(\d+)", NEIGHBOUR.read_text(encoding="utf-8"), re.M)
     if theirs:

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <!--
-    LinkForge macOS entitlements (ad-hoc / free-path build).
+    LinkChat macOS entitlements (ad-hoc / free-path build).
 
     THE LOAD-BEARING KEY is com.apple.security.cs.disable-library-validation.
     The 2.2.15 ad-hoc DMG crashed at launch on macOS 26 with:

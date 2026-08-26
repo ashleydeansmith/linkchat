@@ -9,7 +9,7 @@ for F3's numbers-on-canvas). This lane is READ-heavy and browser-free:
      never guessed (§6b-11 — two "John Smith"s must not merge stats).
   2. RECONCILE history: outbound rows in `messages` matched against the active version's
      arm content-lineage become 'sent' stamps with cohort='backfill' (finding 8 — the
-     dominant path, Ashley sending by hand, must not read as "sent ≈ 0"). Idempotent:
+     dominant path, the operator sending by hand, must not read as "sent ≈ 0"). Idempotent:
      same natural key a live send would use.
   3. MATCHED: classify each joined conversation's latest inbound text against the active
      version and stamp the branch (full thread body when the mirror holds it, else the
@@ -18,10 +18,10 @@ for F3's numbers-on-canvas). This lane is READ-heavy and browser-free:
   4. SECOND EXCHANGE: their inbound AFTER our stamped send (full-thread seq proof when
      available, else the preview/direction heuristic — flagged as such).
   5. BOOKED: reads the meetings-feed JSONL (FILE CONTRACT — meeting-triage writes it;
-     LinkForge never touches Fathom, §5.4). ref=lead_id joins exactly; name-join is the
+     the parent program never touches Fathom, §5.4). ref=lead_id joins exactly; name-join is the
      fallback-with-flag; ambiguous names are counted, never guessed.
 
-Run:  python -m linkforge flows-sensors
+Run:  python -m engine flows-sensors
 Output: data/metrics/flows-sensors.json + RESULT line (house lane convention).
 """
 from __future__ import annotations
@@ -369,7 +369,7 @@ def mark_booked(lead_id: int, at: str | None = None, account_id: str = "default"
 
 
 # ---------------------------------------------------------------------------
-# no-reply sensor + the re-activate queue (Ashley 2026-07-15: "a tab that's a
+# no-reply sensor + the re-activate queue (ruled 2026-07-15: "a tab that's a
 # no reply and a re-activate"). The silent majority becomes a first-class lane:
 # a TIMEOUT-entry branch (meta.entry_timeout_days, e.g. R0) is entered by N days
 # of silence after an opener send — sensed here, never classified from text.
@@ -514,7 +514,7 @@ def _resolve_reactivation_bubbles(move_shape: str | None, full_name: str | None)
 def build_reactivate_queue(limit: int = 100) -> dict:
     """The re-activate candidates: no_reply-stamped leads who are STILL silent and have
     not had their one nudge. STAGING ONLY — drafting runs the DM SOP chain (dm-conversation
-    → James → Ashley taps); nothing here sends. One nudge per person, ever (the flow's
+    → a reviewer → the operator taps); nothing here sends. One nudge per person, ever (the flow's
     'never' rule) — anyone with a send after their no_reply stamp is excluded for good."""
     out = {"as_of": _now(), "entries": [], "excluded_replied": 0, "excluded_nudged": 0}
     db.sync_red_list_from_json()   # Layer A: red-listed people never enter the queue

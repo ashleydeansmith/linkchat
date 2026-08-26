@@ -12,7 +12,7 @@ below is the short version for somebody who has already read it.
 ## Install, in four lines
 
     cd %USERPROFILE%\Documents
-    git clone https://github.com/ashleydeansmith/linkchat.git LinkChat
+    git clone https://github.com/OWNER/linkchat.git LinkChat
 
 Then double-click `setup.cmd` in the folder it made, and double-click the LinkChat icon
 it puts on your desktop.
@@ -26,7 +26,7 @@ It only looks — it installs nothing and sends nothing.
 
 **On a Mac** you run `setup-mac.command` instead, and Python comes from
 https://www.python.org/downloads/macos/. **Nobody has ever run LinkChat on a Mac** — do
-the install the day before, with Ashley on a message, rather than live on the call. The
+the install the day before, with whoever gave you this on a message, rather than live on the call. The
 Mac paragraph in the guide says what differs and what to do when it stops.
 
 ---
@@ -84,4 +84,4 @@ Open it in this folder and say **"run doctor.py and fix what it finds"**. `CLAUD
 loads on its own and tells Claude what it may change and what it must never touch — the
 checks that stop a message reaching the wrong person, your CRM records, and the tests.
 You have read access to this repository and not write access, so a fix stays on your
-machine: send Ashley the patch.
+machine: send the patch to whoever gave you this.

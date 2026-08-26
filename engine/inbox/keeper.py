@@ -1,16 +1,16 @@
-"""keeper.py — inboxforge's read-only bridge to the ONE shared LinkedIn keeper.
+"""keeper.py — the inbox half's read-only bridge to the ONE shared LinkedIn keeper.
 
-inboxforge does NOT own a browser. It connects to the SAME keeper Chromium LinkForge
+the inbox half does NOT own a browser. It connects to the SAME keeper Chromium the parent program
 runs (the only process allowed to open the linkedin-session profile), holds the SAME
-shared READ_LOCK every LinkForge lane holds while driving it, checks the SAME 'scrape'
+shared READ_LOCK every the parent program lane holds while driving it, checks the SAME 'scrape'
 budget, logs to the SAME ledger, and reads — never writes — the already-rendered DOM.
 
-The two DOM selector strings are vendored from linkforge.inbox (LIST_JS / READ_JS) so
-inboxforge can run before the later merge; selftest() fails LOUD if the live DOM no
+The two DOM selector strings are vendored from the parent program's inbox (LIST_JS / READ_JS) so
+the inbox half can run before the later merge; selftest() fails LOUD if the live DOM no
 longer matches, so selector drift surfaces as an error rather than silent bad data.
-After the merge these collapse back to `from linkforge import inbox`.
+After the merge these collapse back to `from the parent program import inbox`.
 
-Heavy deps (playwright, linkforge.browser, linkedin_browser) are imported lazily inside
+Heavy deps (playwright, engine.browser, linkedin_browser) are imported lazily inside
 the functions that drive the browser, so importing this module for the pure helpers
 (read_list / selftest parsing) or the DB CLI stays cheap and can't fail at import time.
 """
@@ -28,7 +28,7 @@ _MONTH = re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b")
 # LinkedIn stamps a conversation from TODAY with a clock time and an older one
 # with a month. Only the month was looked for, so every conversation from today
 # fell past it to a blunt 40-character cut and kept its timestamp and the start
-# of the message inside the person's name: "Malcom Ovwighose 10:42 AM 10:42 AM
+# of the message inside the person's name: "Marcus Oyelaran 10:42 AM 10:42 AM
 # You:". Found 2026-08-25 on a real inbox - eleven of twelve rows were from
 # today, so eleven of twelve names were wrong. It had gone unseen because a
 # reply older than today parses correctly.
@@ -36,7 +36,7 @@ _TIME = re.compile(r"\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b")
 # Some rows carry neither, and lead with a relative age instead.
 _AGO = re.compile(r"\b\d+\s*(?:m|h|d|w|mo|y)\b|\byesterday\b", re.I)
 
-# --- vendored DOM selectors (source of truth: linkforge/inbox.py) -------------------
+# --- vendored DOM selectors (source of truth: the parent program's inbox) -------------------
 
 # List rows. Per row capture: the thread URN (from the row's thread anchor href when
 # present), the collapsed innerText (name + latest-message preview, author-prefixed),
@@ -161,7 +161,7 @@ def thread_profile_url(page, name: str | None) -> str | None:
             continue
         if got.startswith(want) or want in got:
             return _canon_profile(href)        # full name: the strongest match
-        # "View Shabina's profile" - the first name, which is still theirs and
+        # "View Sabina's profile" - the first name, which is still theirs and
         # never the signed-in person's unless they share a first name.
         if best is None and first and re.search(r"\b%s\b" % re.escape(first), got):
             best = _canon_profile(href)
@@ -376,7 +376,7 @@ def _search_and_click(page, name: str) -> bool:
 def _open_thread_via_inbox(page, thread_urn: str, name: str = None) -> bool:
     """HUMAN navigation to a conversation: open the messaging INBOX and SEARCH the person's name,
     then click their row. NEVER a direct goto to /messaging/thread/<urn>/ (deep-linking reloads the
-    thread page = a loud AI tell, Ashley 2026-07-24). Rows carry no urn (probed) so name is the only
+    thread page = a loud AI tell, ruled 2026-07-24). Rows carry no urn (probed) so name is the only
     handle. Returns True once the thread is open with a composer."""
     # Already sitting on the right thread with a live composer? Reuse it — the most human thing.
     if thread_urn and thread_urn in (page.url or "") and page.query_selector(THREAD_IS_OPEN_SEL):
@@ -502,7 +502,7 @@ def selftest(page) -> tuple[bool, str]:
 def drive(wait_sec: int = 300, spawn: bool = False, action: str = "scrape"):
     """Safely take ONE set of hands on the keeper.
 
-    Holds the shared READ_LOCK (serialises against every LinkForge lane), checks the
+    Holds the shared READ_LOCK (serialises against every the parent program lane), checks the
     shared budget for `action` first ('scrape' for reads, 'dm' for a send), connects over
     CDP to the keeper, yields the live page, and ALWAYS releases the lock + disconnects
     (keeper stays alive).
@@ -544,7 +544,7 @@ def drive(wait_sec: int = 300, spawn: bool = False, action: str = "scrape"):
         # button or command could open it.
         if B.ensure_keeper() is None:
             yield None, ("LinkChat could not open your LinkedIn browser. Try Sync "
-                         "inbox again; if it keeps happening send Ashley this line.")
+                         "inbox again; if it keeps happening send this line to whoever gave you this.")
             return
 
     # Take the SAME lock Gather takes, out of your own CRM.

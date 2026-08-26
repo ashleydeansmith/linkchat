@@ -22,7 +22,7 @@ __version__ = "0.1.0"
 PKG_DIR = Path(__file__).resolve().parent
 APP_DIR = PKG_DIR.parent
 
-# Kept for the files brought over from LinkForge, which expect it.
+# Kept for the files brought over from the parent program, which expect it.
 _AUTOMATION = APP_DIR
 
 
@@ -48,7 +48,7 @@ def data_dir():
 class _LazyPath(os.PathLike):
     """A path that answers with wherever the CRM is at the moment it is asked.
 
-    The files brought over from LinkForge read DATA_DIR when they load, which is
+    The files brought over from the parent program read DATA_DIR when they load, which is
     before you have chosen a CRM. A fixed value captured at that moment would send
     everything written afterwards to the wrong folder for the rest of the session.
     """
@@ -103,7 +103,7 @@ def safe_close(ctx) -> None:
         pass
 
 
-# The do-not-contact list that came with the files brought over from LinkForge.
+# The do-not-contact list that came with the files brought over from the parent program.
 # It is NOT the list LinkChat obeys. The list that matters is `holds.py` in your
 # own CRM, which you wrote when you installed Layer 6, and which crm_bridge.py
 # checks before every message. This path exists only because the database file

@@ -3,8 +3,8 @@
 // The engine serves BOTH the API and the built web/dist (server.py), so this shell
 // just needs to start it and point a window at it — no Vite, no bundler at runtime.
 //
-//   cd linkforge/web && npm run build      # build the UI once (server serves web/dist)
-//   cd linkforge/desktop && npm install && npm start
+//   cd the parent program/web && npm run build      # build the UI once (server serves web/dist)
+//   cd the parent program/desktop && npm install && npm start
 //
 // Auto-update (electron-updater + a GitHub-releases feed) is the next step — the
 // electron-builder config in package.json is the foundation for it.
@@ -19,7 +19,7 @@ const { checkForUpdates } = require("./updater");  // macOS free-path self-updat
 const PORT = 8790;
 const HEALTH = `http://127.0.0.1:${PORT}/api/health`;
 const APP_URL = `http://127.0.0.1:${PORT}/`;
-// desktop/ → linkforge/ → automation/  (the CWD the package resolves from)
+// desktop/ → the parent program/ → automation/  (the CWD the package resolves from)
 const APP_ROOT = path.resolve(__dirname, "..");   // the LinkChat folder
 const PYTHON = process.platform === "win32" ? "python" : "python3";
 

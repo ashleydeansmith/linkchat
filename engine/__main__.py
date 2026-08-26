@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import sys
 
-PORT = 8790          # not the port LinkForge uses, so both can run at once
+PORT = 8790          # not the port the parent program uses, so both can run at once
 
 
 def _arg(argv, name, fallback=None):

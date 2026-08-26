@@ -359,7 +359,7 @@ def import_flows_json(src, name: str = "imported flow", activate: bool = False,
                       lineage: str | None = None) -> int:
     """Seed a version from a flows.json document (path or dict). Openers and branch
     next-moves become nodes+arms; forward branches become typed-where-possible edges
-    ('silence' -> timeout, everything else stays an honest display label until Ashley
+    ('silence' -> timeout, everything else stays an honest display label until the owner
     types it in the F2 editor — prose is a label, never a condition, finding 4)."""
     doc = src if isinstance(src, dict) else json.loads(Path(src).read_text(encoding="utf-8"))
     errs: list[str] = []
@@ -494,7 +494,7 @@ def export_flows_json(version_id: int) -> dict:
         # conversation as off-map.
         #
         # This was missing until 2026-08-25 and it was silent. Exporting the live
-        # v6.2 flow out of LinkForge and importing it into LinkChat reported nine
+        # v6.2 flow out of the parent program and importing it into LinkChat reported nine
         # branches and twenty-nine links and looked complete - and had lost all
         # twelve locked messages. The only trace was the surviving next_move
         # prose still telling the reader to "send templates[0]", pointing at
@@ -593,14 +593,14 @@ def _arm_contrast(arms: dict) -> dict | None:
 
 
 def graduation_readiness(contrast: dict | None, ev: dict) -> dict:
-    """F4 readiness INDICATOR — pure information, enables NOTHING. Tells Ashley whether a
+    """F4 readiness INDICATOR — pure information, enables NOTHING. Tells the owner whether a
     branch has earned the right to be *considered* for mechanical-send graduation. It never
-    sends and never flips a switch: actual graduation is Ashley-only AND blocked on the
+    sends and never flips a switch: actual graduation is owner-only AND blocked on the
     conversation-state machine (§6b-14), so this is a read-only 'is it ready to discuss'.
       no_data      — nothing sent yet
       gathering    — sends happening, not yet at the sample floor
       no_winner    — enough data, no arm clearly better (keep testing or accept parity)
-      has_winner   — a clear winner above the floor: a graduation CANDIDATE for Ashley"""
+      has_winner   — a clear winner above the floor: a graduation CANDIDATE for the owner"""
     sent = ev.get("sent", 0)
     if not sent:
         return {"status": "no_data", "sendable": False}
@@ -615,7 +615,7 @@ def graduation_readiness(contrast: dict | None, ev: dict) -> dict:
     if contrast.get("leader"):
         return {"status": "has_winner", "sendable": False,   # sendable stays False by design
                 "winner": contrast["leader"], "n": sent,
-                "note": "graduation candidate — Ashley-only; auto-send blocked on the "
+                "note": "graduation candidate — owner-only; auto-send blocked on the "
                         "conversation-state machine (plan §6b-14)"}
     return {"status": "no_winner", "sendable": False, "n": sent}
 

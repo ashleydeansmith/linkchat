@@ -7,7 +7,7 @@
 #
 #  ⚠ NOBODY HAS EVER RUN LINKCHAT ON A MAC. This file was written on 2026-08-25
 #  and has never been run on the computer it is for. It may not work. If it
-#  stops, send Ashley everything the window printed - that is useful, not a
+#  stops, send whoever gave you this everything it printed - that is useful, not a
 #  nuisance, and it is how the Mac version gets finished.
 #
 #  Two faults this file is written against, both of which are the Mac versions
@@ -47,7 +47,7 @@ case "$KIND" in
     echo
     echo "  LinkChat has been run on Windows only. This installer was written"
     echo "  for a Mac and has never been run on one. It may work here and"
-    echo "  nobody knows. Message Ashley before you rely on it."
+    echo "  nobody knows. Ask whoever gave you this before you rely on it."
     echo
     read -r -p "  Press return to carry on anyway, or close this window. " _ || true
     ;;
@@ -99,14 +99,14 @@ echo
 # --- LinkChat's own private Python, inside its own folder ------------------
 echo "  [1 of 5] Making LinkChat its own private Python..."
 if [ ! -x ".venv/bin/python" ]; then
-  "$PY" -m venv .venv || { echo; echo "  Could not make it. Send Ashley the lines above."; read -r -p "  Press return to close. " _ || true; exit 1; }
+  "$PY" -m venv .venv || { echo; echo "  Could not make it. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
 fi
 VPY=".venv/bin/python"
-[ -x "$VPY" ] || { echo "  The private Python is not there. Send Ashley the lines above."; read -r -p "  Press return to close. " _ || true; exit 1; }
+[ -x "$VPY" ] || { echo "  The private Python is not there. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
 
 echo "  [2 of 5] Installing the parts LinkChat needs..."
-"$VPY" -m pip install --quiet --upgrade pip || { echo; echo "  That did not finish. Send Ashley the lines above."; read -r -p "  Press return to close. " _ || true; exit 1; }
-"$VPY" -m pip install --quiet -r requirements.txt || { echo; echo "  That did not finish. Send Ashley the lines above."; read -r -p "  Press return to close. " _ || true; exit 1; }
+"$VPY" -m pip install --quiet --upgrade pip || { echo; echo "  That did not finish. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
+"$VPY" -m pip install --quiet -r requirements.txt || { echo; echo "  That did not finish. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
 
 # The window itself needs Mac-only parts that a Windows computer has no use for,
 # so they are not in the parts list. Without them LinkChat still runs - it opens
@@ -115,13 +115,13 @@ echo "  [3 of 5] Installing the parts that draw the window on a Mac..."
 "$VPY" -m pip install --quiet "pywebview[cocoa]>=5.0" || echo "  (The window parts did not install. LinkChat will open in your browser instead.)"
 
 echo "  [4 of 5] Downloading the browser LinkChat reads with (about 150 MB)..."
-"$VPY" -m playwright install chromium || { echo; echo "  That did not finish. Send Ashley the lines above."; read -r -p "  Press return to close. " _ || true; exit 1; }
+"$VPY" -m playwright install chromium || { echo; echo "  That did not finish. Send the lines above to whoever gave you this."; read -r -p "  Press return to close. " _ || true; exit 1; }
 
 echo "  [5 of 5] Checking the parts actually landed, and putting LinkChat on your desktop..."
 "$VPY" -c "import fastapi, uvicorn, pydantic, playwright, psutil" || {
   echo
   echo "  The parts installed but Python cannot find them."
-  echo "  Send Ashley the last few lines above."
+  echo "  Send the last few lines above to whoever gave you this."
   read -r -p "  Press return to close. " _ || true
   exit 1
 }
