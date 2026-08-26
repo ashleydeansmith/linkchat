@@ -140,7 +140,14 @@ for rel in readable:
         text = (ROOT / rel).read_text(encoding="utf-8", errors="replace")
     except OSError:
         continue
-    for m in re.finditer(r"[A-Za-z]:\\+Users\\+[A-Za-z0-9._-]+|/(?:home|Users)/[A-Za-z0-9._-]+",
+    # The unix forms need a trailing slash so what is matched is PATH-shaped.
+    # Without it, `/home/i.test(head)` - a piece of JavaScript sitting inside a
+    # Python string, testing for the word "home" - was read as somebody's home
+    # folder, and the verdict came back DO NOT SEND over a file that names no
+    # computer at all. A gate that cries wolf gets worked around, and then it
+    # is not a gate.
+    for m in re.finditer(r"[A-Za-z]:\\+Users\\+[A-Za-z0-9._-]+"
+                         r"|/(?:home|Users)/[A-Za-z0-9._-]+/",
                          text):
         # A placeholder telling a member what THEIR path looks like is fine.
         window = text[max(0, m.start() - 60):m.end() + 20].lower()
