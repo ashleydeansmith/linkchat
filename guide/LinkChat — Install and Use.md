@@ -29,16 +29,25 @@ You need four:
 
 ### If you are on a Mac, read this first
 
-**Tell whoever gave you this before the call, not during it.** There is now a Mac installer in the
-LinkChat folder — it is called `setup-mac.command` and you run that instead of `setup.cmd`.
-Everything after the install is identical: the same two screens, the same approval line,
-the same five checks.
+Run `setup-mac.command` instead of `setup.cmd`. Everything after the install is
+identical: the same screens, the same approval line, the same five checks.
 
-**Nobody has ever run LinkChat on a Mac.** It was written on 2026-08-25 and has never
-been run on the computer it is for. So do the install the day before, on your own, with
-them on a message — not live on the call with eight people waiting, where a fault
-costs you the session. If it stops, send whoever gave you this everything the window printed. That is
-useful rather than a nuisance, and it is how the Mac version gets finished.
+**Nobody has ever run LinkChat on a Mac.** It was written on 2026-08-25 and has
+never been run on the computer it is for, so you are the first and something will
+probably stop.
+
+**That is the work, not an interruption to it.** Open Claude Code in the LinkChat
+folder and say:
+
+    run doctor.py and fix what it finds
+
+`CLAUDE.md` sits in that folder and Claude reads it on its own. It says what may be
+changed and — the part that matters — what must never be touched: the checks that
+stop a message reaching the wrong person, your CRM records, and the tests. If a fix
+would need one of those weakened, Claude is told to stop rather than do it.
+
+Send the patch back when you have it (`git diff > linkchat-fix.patch`). You will have
+written the Mac version.
 
 **Three places the Mac differs**, all of them handled by `setup-mac.command`:
 
@@ -93,27 +102,18 @@ When it finishes, **close the black window and open a new one**, then run
 
 ## Step 2 — Get LinkChat onto your computer
 
-LinkChat is open. Anybody can download it, and there is nothing to be invited to.
-
-**The simple way — no extra software.** Open
-**https://github.com/OWNER/linkchat** in your browser, press the green **Code**
-button, and choose **Download ZIP**. Unzip it into your Documents folder and rename
-the folder to `LinkChat`, so you end up with `Documents\LinkChat`.
-
-**The other way, if you already have Git.** It is worth it if you want to pick up
-later versions with one command rather than downloading again. In the black window,
-type these two lines, pressing Enter after each:
+LinkChat is open source. There is nothing to be invited to and nobody to ask.
 
     cd %USERPROFILE%\Documents
     git clone https://github.com/OWNER/linkchat.git LinkChat
 
-- It should not ask you to sign in. If it does, the address has been mistyped.
-- If it says `git` is not recognised, either use the ZIP above or install Git from
-  **https://git-scm.com/download/win**, accept every default, then close the black
-  window, open a new one, and run the two lines again.
+That is it. You now have `Documents\LinkChat`.
 
-Either way you now have a folder at `Documents\LinkChat`, and the rest of this guide
-is the same.
+Clone rather than download the ZIP, because a clone can pick up every later
+version with one line — `git pull` — and a ZIP means downloading and unzipping
+again each time. If you would rather have the ZIP anyway, the green **Code**
+button at **https://github.com/OWNER/linkchat** has it; unzip into Documents and
+rename the folder to `LinkChat`.
 
 ---
 
