@@ -171,9 +171,18 @@ print("\n=== 8. no file names one particular computer ===")
 # A path with a person's name in it is the same fault as an email address with
 # their name in it, so it is checked the same way.
 
-HOMES = [r"C:\\Users\\(?!Public|Default|All Users)[A-Za-z0-9._-]+",
-         r"/Users/(?!Shared)[A-Za-z0-9._-]+",
-         r"/home/[A-Za-z0-9._-]+"]
+# The unix ones require a trailing slash, so what is matched is PATH-shaped.
+# Without it, `/home/i.test(head)` - a piece of JavaScript inside a Python
+# string, testing for the word "home" - was read as somebody's home folder and
+# failed a file that names no computer at all. A check that cries wolf gets
+# worked around, and then it is not a check.
+# One backslash or two, because a path is written both ways in real source.
+# A raw string leaves one in the file; the ordinary escaped spelling leaves two.
+# Only the single form was matched, so the more common spelling walked past the
+# check written to catch exactly it.
+HOMES = [r"C:\\{1,2}Users\\{1,2}(?!Public|Default|All Users)[A-Za-z0-9._-]+",
+         r"/Users/(?!Shared)[A-Za-z0-9._-]+/",
+         r"/home/[A-Za-z0-9._-]+/"]
 for f in sorted(ENGINE.rglob("*.py")):
     body = f.read_text(encoding="utf-8", errors="replace")
     lines = [l for l in body.splitlines() if not l.strip().startswith("#")]

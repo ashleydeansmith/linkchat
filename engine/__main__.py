@@ -3,6 +3,11 @@
     python -m engine desktop          open LinkChat as a window
     python -m engine serve            open the engine only, no window
     python -m engine serve --port N   open it somewhere else
+
+    python -m engine connect --commit --max N     ask people to connect
+    python -m engine withdraw --commit            take back old requests
+    python -m engine accept-sync                  work out who said yes
+    python -m engine search --probe               look at your saved searches
     python -m engine crm [path]       say what LinkChat can see of your CRM, and stop
     python -m engine inbox-sync       read your LinkedIn inbox and store what is there
     python -m engine inbox-fetch-messages N   read conversation N in full, now
@@ -39,6 +44,20 @@ def desktop(argv):
     """Open LinkChat as a window. This is what the shortcut runs."""
     from .server import run_desktop
     run_desktop(port=int(_arg(argv, "--port", PORT)))
+    return 0
+
+
+def lane(command, argv):
+    """Run one acquisition lane. Its own argv is passed through untouched."""
+    import sys as _sys
+    mod = {"connect": "connect", "withdraw": "withdraw",
+           "accept-sync": "accept_sync", "search": "salesnav",
+           "import-csv": "csv_import"}[command]
+    # The lanes read sys.argv directly, so hand them their own flags with the
+    # command word taken off the front.
+    _sys.argv = [command] + list(argv[2:])
+    import importlib
+    importlib.import_module("engine." + mod).main()
     return 0
 
 
@@ -87,6 +106,18 @@ def main(argv):
         return crm(argv)
     if command == "inbox-sync":
         return inbox_sync(argv)
+
+    # THE ACQUISITION LANES.
+    #
+    # Each runs as its own process, the way the inbox read does, because they
+    # drive a browser through Playwright's blocking interface and that must
+    # never happen inside the web server's own loop.
+    #
+    # Every one of them asks engine.safety first, which asks YOUR CRM's daily
+    # ceiling - the same one Gather answers to. There is no second set of
+    # counts here: LinkedIn counts the account, not the program.
+    if command in ("connect", "withdraw", "accept-sync", "search", "import-csv"):
+        return lane(command, argv)
     if command == "inbox-fetch-messages":
         return inbox_fetch_one(argv)
     if command in ("inbox-send", "inbox-send-media", "inbox-voice-send",

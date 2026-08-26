@@ -609,6 +609,111 @@ from . import flows_sensors as _fs
 # you run it from a terminal.
 # ---------------------------------------------------------------------------
 
+class LaneRun(BaseModel):
+    mode: str = "probe"              # never commit unless asked, explicitly, every time
+    max: int | None = None
+    url: str | None = None
+    campaign: str | None = None
+
+
+# The lanes that reach out to people, rather than reading what came back.
+#
+# Each is a separate process, because they drive a browser through a blocking
+# interface that must never run inside this server's own loop - the same reason
+# the inbox read is a subprocess.
+LANES = {
+    "connect":     {"label": "Ask people to connect",
+                    "what": "Sends connection requests from your queue. A request "
+                            "carries none of your words. LinkedIn counts these, so "
+                            "they answer to your daily ceiling.",
+                    "kind": "connect"},
+    "withdraw":    {"label": "Take back requests nobody answered",
+                    "what": "Withdraws old requests. Worth doing often - a pile of "
+                            "unanswered ones is what makes LinkedIn tighten your limits.",
+                    "kind": "connect"},
+    "accept-sync": {"label": "Work out who said yes",
+                    "what": "Checks who accepted and writes it into your records. "
+                            "Reading only; nothing is said to anybody.",
+                    "kind": "scrape"},
+    "search":      {"label": "Look through a saved search",
+                    "what": "Reads a Sales Navigator saved search and puts the people "
+                            "into your queue. Nothing is said to anybody.",
+                    "kind": "scrape"},
+}
+
+
+@app.get("/api/lanes")
+def lanes_state() -> dict:
+    """What can be run, and whether your ceiling allows it right now."""
+    from . import safety
+    out = {}
+    for name, meta in LANES.items():
+        try:
+            ok, why = safety.can_act(name if name != "accept-sync" else "accept")
+        except Exception as exc:
+            ok, why = False, exc.__class__.__name__
+        out[name] = {**meta, "allowed": bool(ok), "why": why or ""}
+    return {"lanes": out}
+
+
+@app.post("/api/lanes/{name}")
+def lanes_run(name: str, body: LaneRun) -> dict:
+    """Run one lane. Practice unless you say commit, every single time.
+
+    Nothing here decides for itself that somebody should be contacted. A lane
+    reaches out only when this is called with mode "commit", and even then it
+    stops the moment your CRM's ceiling says no.
+    """
+    if name not in LANES:
+        raise HTTPException(404, "there is no lane called %r" % name)
+    bridge = crm(required=True)
+
+    args = []
+    if body.mode == "commit":
+        args.append("--commit")
+        # Asked once here, and again inside the lane before every single action.
+        allowed, why = bridge.may_act(LANES[name]["kind"])
+        if not allowed:
+            raise HTTPException(409, why or "your daily ceiling says no for now")
+    else:
+        args.append("--probe")
+    if body.max:
+        args += ["--max", str(int(body.max))]
+    if body.url:
+        args += ["--url", body.url]
+    if body.campaign:
+        args += ["--campaign", body.campaign]
+
+    from .inbox.server import _run_inbox_cmd
+    return _run_inbox_cmd(name, *args, timeout=900)
+
+
+@app.get("/api/campaigns")
+def campaigns_list() -> dict:
+    """Your named pushes, and how far each has got."""
+    from . import db as maindb
+    out = []
+    try:
+        with maindb.connect() as cx:
+            rows = [dict(r) for r in cx.execute(
+                "SELECT id, name, status, daily_connect_cap FROM campaigns ORDER BY id")]
+            for r in rows:
+                for key, sql in (
+                    ("people",    "SELECT COUNT(*) FROM leads WHERE campaign_id=?"),
+                    ("queued",    "SELECT COUNT(*) FROM leads WHERE campaign_id=? AND status='collected'"),
+                    ("requested", "SELECT COUNT(*) FROM leads WHERE campaign_id=? AND status='invited'"),
+                    ("accepted",  "SELECT COUNT(*) FROM leads WHERE campaign_id=? AND status='accepted'"),
+                ):
+                    try:
+                        r[key] = cx.execute(sql, (r["id"],)).fetchone()[0]
+                    except Exception:
+                        r[key] = None
+                out.append(r)
+    except Exception as exc:
+        return {"campaigns": [], "why": "%s" % exc.__class__.__name__}
+    return {"campaigns": out}
+
+
 @app.get("/api/gather/state")
 def gather_state() -> dict:
     """Whether your Gather jobs are here, and what they are."""

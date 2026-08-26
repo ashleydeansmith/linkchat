@@ -5,6 +5,7 @@ import Inbox from "./pages/Inbox.jsx";
 import Flows from "./pages/Flows.jsx";
 import Home from "./pages/Home.jsx";
 import Live from "./pages/Live.jsx";
+import Campaigns from "./pages/Campaigns.jsx";
 import Setup from "./pages/Setup.jsx";
 
 // One call answers everything the shell needs to know: is there a CRM, how much
@@ -59,6 +60,7 @@ export default function App() {
         <Banner crm={crm} />
         {route === "home" ? <Home onNavigate={setRoute} />
           : route === "inbox" ? <Inbox />
+          : route === "camps" ? <Campaigns />
           : route === "live" ? <Live />
           : <Flows />}
       </main>

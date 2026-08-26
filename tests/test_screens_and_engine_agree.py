@@ -120,10 +120,15 @@ def screen_calls() -> dict[str, tuple[str, str]]:
                                   api, re.M | re.S):
         harvest(body, group + ".")
 
+    # Match on a whole name, not a substring. "api.run" is inside "api.runLane",
+    # so plain substring matching reported a door as called when nothing called
+    # it - and the failure named a route that was never asked for.
     called = {}
     for name, spec in defs.items():
         root = name.split(".")[0]
-        if ("api.%s" % name) in src or ("api.%s." % root) in src:
+        whole = r"api\.%s\b" % re.escape(name)
+        group = r"api\.%s\." % re.escape(root)
+        if re.search(whole, src) or ("." in name and re.search(group, src)):
             called[name] = spec
     return called
 

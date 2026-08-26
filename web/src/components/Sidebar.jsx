@@ -11,6 +11,7 @@ const NAV = [
   { key: "home",  label: "Home",          ic: "⌂" },
   { key: "inbox", label: "Conversations", ic: "💬" },
   { key: "flows", label: "Sequences",     ic: "⤷" },
+  { key: "camps", label: "Campaigns",     ic: "◈" },
   { key: "live",  label: "Live",          ic: "◉" },
 ];
 

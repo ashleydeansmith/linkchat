@@ -360,7 +360,9 @@ def renew_lock(profile: str, agent: str) -> bool:
     if not meta or meta.get("pid") != os.getpid():
         return False
     meta["hb"] = _now_iso()
-    tmp = path.with_suffix(".lock.tmp")
+    # A unique temp name per write. A fixed one is the race that cost messages
+    # in the outbox: two writers open it at once and Windows refuses the second.
+    tmp = path.with_name(path.name + ".%d.tmp" % os.getpid())
     try:
         tmp.write_text(json.dumps(meta), encoding="utf-8")
         os.replace(tmp, path)      # never open the real lock file for writing
@@ -402,24 +404,50 @@ def held_locks() -> list[dict]:
 
 
 class _LockCtx:
-    """`with ops.lock(...) as got:` — got is False if it stayed busy."""
+    """`with ops.lock(...) as got:` — got is False if it stayed busy.
 
-    def __init__(self, profile: str, agent: str, wait_sec: float = 0.0):
+    heartbeat=True keeps saying the job is still alive for as long as the lock
+    is held. A long run - walking a search, sending a batch of requests - takes
+    many minutes, and without this it eventually looks abandoned and another job
+    reclaims the lock underneath it. Two jobs then drive one signed-in browser,
+    which is the fault that does not announce itself.
+    """
+
+    def __init__(self, profile: str, agent: str, wait_sec: float = 0.0,
+                 heartbeat: bool = False):
         self.profile, self.agent, self.wait_sec = profile, agent, wait_sec
+        self.heartbeat = heartbeat
         self.got = False
+        self._stop = None
+        self._thread = None
 
     def __enter__(self) -> bool:
         self.got = acquire_lock(self.profile, self.agent, self.wait_sec)
+        if self.got and self.heartbeat:
+            import threading
+            self._stop = threading.Event()
+
+            def beat():
+                while not self._stop.wait(30.0):
+                    try:
+                        renew_lock(self.profile, self.agent)
+                    except Exception:
+                        return
+            self._thread = threading.Thread(target=beat, daemon=True)
+            self._thread.start()
         return self.got
 
     def __exit__(self, *exc):
+        if self._stop is not None:
+            self._stop.set()
         if self.got:
             release_lock(self.profile, self.agent)
         return False
 
 
-def lock(profile: str, agent: str = "linkchat", wait_sec: float = 0.0):
-    return _LockCtx(profile, agent, wait_sec)
+def lock(profile: str, agent: str = "linkchat", wait_sec: float = 0.0,
+         heartbeat: bool = False):
+    return _LockCtx(profile, agent, wait_sec, heartbeat)
 
 
 @contextmanager

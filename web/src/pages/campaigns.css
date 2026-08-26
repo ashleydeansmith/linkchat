@@ -1,0 +1,30 @@
+/* Campaigns — where conversations come from. */
+.cp-wrap { padding: 22px 26px; max-width: 1100px; }
+.cp-head h1 { margin: 0 0 6px; font-size: 22px; }
+.cp-sub { margin: 0 0 18px; color: var(--muted, #6b7280); font-size: 13px; max-width: 74ch; }
+.cp-err { background:#FDECEC; border:1px solid #F3B0B0; border-radius:8px;
+          padding:9px 12px; margin-bottom:14px; font-size:13px; }
+.cp-empty { color: var(--muted, #6b7280); font-size: 13px; }
+.cp-lanes { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.cp-lane { flex: 1 1 300px; border: 1px solid var(--line, #e5e7eb);
+           border-radius: var(--r-ctl, 10px); padding: 14px 16px; }
+.cp-lane.cp-blocked { background: var(--c-low, #f8f9fa); }
+.cp-lane-h { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; }
+.cp-what { color: var(--muted, #6b7280); font-size: 12.5px; margin: 8px 0 8px; }
+.cp-why { font-size: 12px; margin-bottom: 11px; }
+.cp-no { color: #b45309; }
+.cp-muted { color: var(--muted, #6b7280); }
+.cp-actions { display: flex; gap: 8px; }
+.cp-dot { width: 8px; height: 8px; border-radius: 50%; display:inline-block; flex:0 0 auto; }
+.cp-green { background:#22a06b; } .cp-grey { background:#b0b6be; }
+.cp-said { border:1px solid var(--line,#e5e7eb); border-radius:var(--r-ctl,10px);
+           padding:12px 14px; margin-bottom:18px; background: var(--c-low,#f8f9fa); }
+.cp-said-h { font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+             color:var(--muted,#6b7280); margin-bottom:7px; }
+.cp-said pre { margin:0; font-size:11.5px; white-space:pre-wrap; word-break:break-word; }
+.cp-camps { margin-top: 4px; }
+.cp-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+.cp-table th { text-align:left; font-weight:600; font-size:11.5px; letter-spacing:.05em;
+               text-transform:uppercase; color:var(--muted,#6b7280);
+               border-bottom:1px solid var(--line,#e5e7eb); padding:5px 8px 5px 0; }
+.cp-table td { padding:6px 8px 6px 0; border-bottom:1px solid var(--line,#eef0f2); }
