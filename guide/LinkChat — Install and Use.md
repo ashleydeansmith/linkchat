@@ -102,17 +102,22 @@ When it finishes, **close the black window and open a new one**, then run
 
 ## Step 2 — Get LinkChat onto your computer
 
-LinkChat is open source. There is nothing to be invited to and nobody to ask.
+LinkChat is open source — you get the whole program, and you can change any
+part of it.
 
     cd %USERPROFILE%\Documents
-    git clone https://github.com/OWNER/linkchat.git LinkChat
+    git clone https://github.com/ashleydeansmith/linkchat.git LinkChat
 
 That is it. You now have `Documents\LinkChat`.
+
+If that line comes back saying the repository could not be found, the copy
+you were pointed at is not open to you yet. Say so — it is one setting on
+the other end, not something wrong with your computer.
 
 Clone rather than download the ZIP, because a clone can pick up every later
 version with one line — `git pull` — and a ZIP means downloading and unzipping
 again each time. If you would rather have the ZIP anyway, the green **Code**
-button at **https://github.com/OWNER/linkchat** has it; unzip into Documents and
+button at **https://github.com/ashleydeansmith/linkchat** has it; unzip into Documents and
 rename the folder to `LinkChat`.
 
 ---

@@ -12,7 +12,7 @@ below is the short version for somebody who has already read it.
 ## Install, in four lines
 
     cd %USERPROFILE%\Documents
-    git clone https://github.com/OWNER/linkchat.git LinkChat
+    git clone https://github.com/ashleydeansmith/linkchat.git LinkChat
 
 Then double-click `setup.cmd` in the folder it made, and double-click the LinkChat icon
 it puts on your desktop.

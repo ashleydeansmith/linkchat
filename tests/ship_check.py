@@ -116,6 +116,91 @@ if ORIGIN:
     else:
         ok("what is pushed matches what is here")
 
+# THE ADDRESS IN THE WORDS, AND WHETHER ANYBODY ELSE CAN REACH IT.
+#
+# Everything above proves this computer can clone it. This computer is signed
+# in as the author, so of course it can. Two ways that still leaves nine people
+# unable to get the program, and neither was checked until both happened at
+# once on the morning of the call:
+#
+#   * The guide and the README told people to clone
+#     https://github.com/OWNER/linkchat.git. OWNER was a placeholder nobody
+#     went back and filled in. Typed as written, it is a page that does not
+#     exist.
+#   * The repository was private with one collaborator - the author - and no
+#     invitations sent. The guide said "there is nothing to be invited to and
+#     nobody to ask", which was untrue.
+#
+# So: the address in the shipped words must be the real one, and the real one
+# must be reachable by somebody other than the author.
+
+CLONE_LINE = re.compile(r"https://github\.com/([A-Za-z0-9._-]+)/([A-Za-z0-9._-]+?)(?:\.git)?\b")
+told = {}
+for path in [ROOT / "README.md"] + sorted((ROOT / "guide").glob("*.md")):
+    rel = path.name if path.parent == ROOT else "guide/" + path.name
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        continue
+    for owner, repo in CLONE_LINE.findall(text):
+        told.setdefault("%s/%s" % (owner, repo), []).append(rel)
+
+placeholders = {k: v for k, v in told.items()
+                if k.split("/")[0] in ("OWNER", "owner", "YOURNAME", "yourname",
+                                       "your-name", "USERNAME", "username")}
+if placeholders:
+    bad("the address a member is told to type is a real one",
+        "%s is a placeholder nobody filled in, in %s. Typed as written it is a "
+        "page that does not exist."
+        % (", ".join(sorted(placeholders)),
+           ", ".join(sorted({f for v in placeholders.values() for f in v}))))
+elif not told:
+    unrun("the address a member is told to type is a real one",
+          "the guide and README name no address at all")
+elif ORIGIN:
+    want = ORIGIN.replace(".git", "").split("github.com/")[-1].strip("/").lower()
+    wrong = {k: v for k, v in told.items() if k.lower() != want}
+    if wrong:
+        bad("the address a member is told to type is the one this pushes to",
+            "the words say %s, this pushes to %s"
+            % (", ".join(sorted(wrong)), want))
+    else:
+        ok("the address a member is told to type is the one this pushes to (%s)" % want)
+else:
+    unrun("the address a member is told to type is the one this pushes to",
+          "there is no origin to compare it against")
+
+# Can anybody who is not the author actually get it?
+if not ORIGIN or "github.com" not in ORIGIN:
+    unrun("somebody other than the author can reach it",
+          "no GitHub origin to ask about")
+elif not shutil.which("gh"):
+    unrun("somebody other than the author can reach it",
+          "the gh command is not installed, so this could not be asked")
+else:
+    slug = ORIGIN.replace(".git", "").split("github.com/")[-1].strip("/")
+    v = run(["gh", "repo", "view", slug, "--json", "isPrivate"], timeout=60)
+    if v.returncode != 0:
+        unrun("somebody other than the author can reach it",
+              "gh could not read the repository: " + (v.stderr.strip()[:120] or "?"))
+    elif '"isPrivate":false' in v.stdout.replace(" ", ""):
+        ok("somebody other than the author can reach it (it is public)")
+    else:
+        c = run(["gh", "api", "repos/%s/collaborators" % slug,
+                 "--jq", ".[].login"], timeout=60)
+        i = run(["gh", "api", "repos/%s/invitations" % slug,
+                 "--jq", ".[].invitee.login"], timeout=60)
+        people = [x for x in c.stdout.split() if x]
+        invited = [x for x in i.stdout.split() if x]
+        if len(people) + len(invited) <= 1:
+            bad("somebody other than the author can reach it",
+                "it is private, %d person has access and %d invitation(s) are "
+                "waiting. Nobody else can clone it."
+                % (len(people), len(invited)))
+        else:
+            ok("somebody other than the author can reach it (%d with access, "
+               "%d invited)" % (len(people), len(invited)))
+
 
 # ===========================================================================
 print()
