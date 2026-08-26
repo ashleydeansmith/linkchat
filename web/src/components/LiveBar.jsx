@@ -83,11 +83,22 @@ export default function LiveBar() {
     <div className="livebar">
       {/* Signed in, or waiting for you to sign in. The program knew this all
           along - the browser writes it down - and never said it anywhere. */}
+      {/* WHETHER A WINDOW IS ACTUALLY OPEN IS A SEPARATE QUESTION FROM WHETHER
+          YOU ARE SIGNED IN, AND THIS LINE USED TO ANSWER BOTH THE SAME WAY.
+          It said "a browser window is open and waiting, possibly behind this
+          one" whenever you were not signed in - including when nothing had been
+          started at all, which the card below it said in the same breath. A
+          member reads that and goes hunting behind their own window for a
+          browser that is not there. So the wording follows the browser. */}
       {needsLogin ? (
-        <span className="lb-item lb-signin" title="A browser window has opened on the LinkedIn login page. It may be behind this one.">
+        <span className="lb-item lb-signin" title={keeper
+          ? "A browser window has opened on the LinkedIn login page. It may be behind this one."
+          : "No browser is open yet. Press Sync inbox on Conversations and one opens on the login page."}>
           <span className="lb-dot lb-amber lb-pulse" />
           <strong>Sign in to LinkedIn</strong>
-          <span className="lb-muted"> — a browser window is open and waiting, possibly behind this one</span>
+          <span className="lb-muted">{keeper
+            ? " — a browser window is open and waiting, possibly behind this one"
+            : " — press Sync inbox and a browser opens on the login page"}</span>
         </span>
       ) : (
         <span className="lb-item" title={keeper

@@ -83,10 +83,18 @@ export default function Home({ onNavigate }) {
                   + "your CRM is installed. Nothing is broken; it turns on by itself.",
              go: null };
   } else if (inbox?.needs_login && !inbox?.signed_in) {
-    next = { say: "Sign in to LinkedIn. A browser window is open and waiting on the "
-                  + "login page — it may be behind this one. Once you are in, come "
-                  + "back and press Sync inbox again.", go: "inbox",
-             cta: "Go to Conversations" };
+    // A window being open and you being signed in are two different questions,
+    // and this used to answer both the same way: it sent a member looking behind
+    // their own window for a browser that had never been started. The card
+    // beneath it said "browser not started" at the same moment.
+    next = inbox?.keeper
+      ? { say: "Sign in to LinkedIn. A browser window is open and waiting on the "
+               + "login page — it may be behind this one. Once you are in, come "
+               + "back and press Sync inbox again.", go: "inbox",
+          cta: "Go to Conversations" }
+      : { say: "Sign in to LinkedIn. Press Sync inbox on Conversations: a browser "
+               + "opens on the login page, you sign in once, and you press Sync "
+               + "inbox again.", go: "inbox", cta: "Go to Conversations" };
   } else if (neverSynced) {
     next = { say: "Read your LinkedIn inbox for the first time. Press Sync inbox on "
                   + "Conversations — that is also what opens the browser, and you sign "

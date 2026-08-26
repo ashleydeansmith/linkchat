@@ -119,7 +119,13 @@ export default function Live() {
                 <span className={"lv-what lv-t-" + (e.type || "").replace(/[^a-z_]/g, "")}>
                   {WORDS[e.type] || (e.type || "").replace(/_/g, " ")}
                 </span>
-                <span className="lv-who">{e.who || "—"}</span>
+                {/* THE PERSON'S NAME IS IN `person`. `who` is the address the
+                    event was filed under, and it is empty whenever your CRM
+                    managed to place the person - which is most of the time. So
+                    this column read a dash on every row that HAD a name, next
+                    to a line saying what had just happened to somebody. The
+                    name comes first now; the address is the fallback. */}
+                <span className="lv-who">{e.person || e.who || "—"}</span>
                 {!e.person ? (
                   <span className="lv-nobody" title={
                     "Your CRM could not place this person, so the event is filed "
