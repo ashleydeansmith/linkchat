@@ -41,6 +41,7 @@ RUNS = [
     ("a conversation name is a name", "test_inbox_row_names.py"),
     ("a flow keeps its messages", "test_flow_round_trip.py"),
     ("the CRM gets updated", "test_crm_gets_updated.py"),
+    ("closing it does not empty the copy check", "test_copy_check_survives_a_restart.py"),
     ("the walk", "walk.py"),
 ]
 

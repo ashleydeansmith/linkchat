@@ -16,6 +16,7 @@ the outbox in your CRM, marked unsent, for you to send yourself.
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -69,6 +70,50 @@ def forget_crm():
 
 
 _RECENT_BODIES = []
+_RECENT_LOADED_FROM = None
+
+
+def _tidy(text):
+    """One line, lower case, spaces collapsed - the shape the check compares."""
+    import re
+    return re.sub(r"\s+", " ", str(text or "")).strip().lower()
+
+
+def _bodies_from_outbox(bridge, keep):
+    """The last few messages that were actually approved, read off your outbox.
+
+    THE FAULT THIS EXISTS TO CLOSE. The list used to live only in memory. Close
+    LinkChat and open it again - which a member does every day, and which a crash
+    does for them - and the check had forgotten every message ever approved. The
+    same sentence, refused a second earlier, went straight through. A check that
+    quietly stops checking is worse than no check, because the member believes it
+    is still standing there.
+
+    Your outbox is where the words already live: one file per message, in your own
+    CRM, written before anything is carried anywhere. So the check reads them back
+    rather than keeping a second copy of its own.
+    """
+    # Ask your CRM where its outbox is, the way everything else does. Guessing
+    # the folder would mean this check silently reads nothing on a CRM laid out
+    # differently, which is the same silence it was written to stop.
+    paths = getattr(bridge, "parts", {}).get("crm_paths")
+    if paths is None:
+        return []
+    try:
+        files = sorted(paths.outbox_dir().glob("*.md"))[-keep:]
+    except (OSError, AttributeError):
+        return []
+    bodies = []
+    for f in files:
+        try:
+            text = f.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        # The words sit between the second and third rule, under the explanation.
+        parts = text.split("\n---\n")
+        if len(parts) >= 3:
+            bodies.append(_tidy(parts[-2]))
+    return [b for b in bodies if len(b) >= 25]
 
 
 def _too_similar_to_recent(bridge, body, keep=25):
@@ -80,11 +125,20 @@ def _too_similar_to_recent(bridge, body, keep=25):
     replies to twenty different people is somebody having conversations. Twenty
     copies of one sentence is the thing that gets an account limited - and the count
     cannot tell those apart, because it never looks at the words.
+
+    What it compares against is read back from your outbox the first time it runs
+    after LinkChat opens, so closing the program no longer empties it.
     """
-    import re
-    text = re.sub(r"\s+", " ", str(body or "")).strip().lower()
+    global _RECENT_LOADED_FROM
+    text = _tidy(body)
     if len(text) < 25:
         return None
+
+    here = str(getattr(bridge, "root", "") or "")
+    if _RECENT_LOADED_FROM != here:
+        _RECENT_BODIES[:] = _bodies_from_outbox(bridge, keep)
+        _RECENT_LOADED_FROM = here
+
     for previous in _RECENT_BODIES:
         if _sameness(text, previous) >= 0.9:
             return ("that is almost word-for-word a message you just approved. "
@@ -1040,6 +1094,36 @@ except Exception as _inbox_err:      # noqa: BLE001
     CONVERSATIONS_FAULT = "%s: %s" % (_inbox_err.__class__.__name__, _inbox_err)
     print("[linkchat] conversations did not load: %s" % CONVERSATIONS_FAULT,
           file=sys.stderr)
+
+
+# A CONVERSATIONS FILE THAT GOES BAD AFTER LINKCHAT HAS STARTED.
+#
+# The reason kept above is only ever set once, while the program is starting. A
+# file that is fine at eight in the morning and damaged by eleven - a machine
+# switched off mid-write, a full disk, a folder being synced to the cloud by
+# something else - goes nowhere near it. What the member got instead was the
+# words "Internal Server Error" and an empty screen, which name nothing, blame
+# nothing, and suggest nothing.
+#
+# Nothing here repairs the file. Repairing a damaged record store by guessing is
+# how a wrong message reaches a real person. It says which file, and what it is.
+@app.exception_handler(sqlite3.DatabaseError)
+def _damaged_records(request, exc):      # noqa: ANN001
+    try:
+        from .inbox import db as _db
+        where = str(_db.DB_PATH)
+    except Exception:                     # noqa: BLE001
+        where = "the conversations file in your CRM"
+    return JSONResponse(
+        status_code=503,
+        content={"detail":
+                 "LinkChat could not read your conversations. The file it keeps "
+                 "them in is damaged: %s (%s). Nothing has been lost from your "
+                 "CRM - your people, your outbox and your records are separate "
+                 "files and are untouched. Close LinkChat, move that one file "
+                 "somewhere else, and open LinkChat again: it will build a new "
+                 "one and read your inbox back in from LinkedIn."
+                 % (where, exc.__class__.__name__)})
 
 
 # ---------------------------------------------------------------------------
