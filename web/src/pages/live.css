@@ -1,0 +1,28 @@
+/* Live — what is happening, and what your CRM has recorded. */
+.lv-wrap { padding: 22px 26px; max-width: 1000px; }
+.lv-head h1 { margin: 0 0 6px; font-size: 22px; }
+.lv-sub { margin: 0 0 18px; color: var(--muted, #6b7280); font-size: 13px; max-width: 68ch; }
+.lv-err { background:#FDECEC; border:1px solid #F3B0B0; border-radius:8px; padding:9px 12px;
+          margin-bottom:14px; font-size:13px; }
+.lv-now { border: 1px solid var(--line, #e5e7eb); border-radius: var(--r-ctl, 10px);
+          padding: 13px 15px; margin-bottom: 18px; background: var(--c-low, #f6f7f9); }
+.lv-line { display: flex; align-items: center; gap: 8px; font-size: 13.5px; flex-wrap: wrap; }
+.lv-muted { color: var(--muted, #6b7280); }
+.lv-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.lv-green { background:#22a06b; } .lv-amber { background:#d98a00; }
+.lv-red { background:#d64545; }   .lv-grey  { background:#b0b6be; }
+.lv-pulse { animation: lv-blink 1.1s ease-in-out infinite; }
+@keyframes lv-blink { 0%,100% { opacity:1 } 50% { opacity:.35 } }
+.lv-feed-h { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+             color: var(--muted, #6b7280); margin-bottom: 8px; }
+.lv-empty { color: var(--muted, #6b7280); font-size: 13px; padding: 10px 0; max-width: 64ch; }
+.lv-list { list-style: none; margin: 0; padding: 0; }
+.lv-item { display: flex; align-items: baseline; gap: 10px; padding: 7px 2px;
+           border-bottom: 1px solid var(--line, #eef0f2); font-size: 13px; }
+.lv-when { width: 92px; flex: 0 0 auto; color: var(--muted, #6b7280); font-size: 12px; }
+.lv-what { width: 210px; flex: 0 0 auto; font-weight: 600; }
+.lv-t-message_sent { color: #22a06b; }
+.lv-t-message_staged { color: #d98a00; }
+.lv-who { flex: 1 1 auto; }
+.lv-nobody { flex: 0 0 auto; font-size: 11.5px; color: #b45309; background: #FFF8E6;
+             border-radius: 999px; padding: 1px 8px; }

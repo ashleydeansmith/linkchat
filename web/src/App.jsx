@@ -3,7 +3,8 @@ import Sidebar from "./components/Sidebar.jsx";
 import LiveBar from "./components/LiveBar.jsx";
 import Inbox from "./pages/Inbox.jsx";
 import Flows from "./pages/Flows.jsx";
-import Find from "./pages/Find.jsx";
+import Home from "./pages/Home.jsx";
+import Live from "./pages/Live.jsx";
 import Setup from "./pages/Setup.jsx";
 
 // One call answers everything the shell needs to know: is there a CRM, how much
@@ -28,7 +29,7 @@ function useCRM() {
 }
 
 export default function App() {
-  const [route, setRoute] = useState("inbox");
+  const [route, setRoute] = useState("home");
   const [showSetup, setShowSetup] = useState(false);
   const { crm, loading, refresh } = useCRM();
 
@@ -56,7 +57,10 @@ export default function App() {
       <main className="main">
         <LiveBar />
         <Banner crm={crm} />
-        {route === "inbox" ? <Inbox /> : route === "find" ? <Find /> : <Flows />}
+        {route === "home" ? <Home onNavigate={setRoute} />
+          : route === "inbox" ? <Inbox />
+          : route === "live" ? <Live />
+          : <Flows />}
       </main>
     </div>
   );

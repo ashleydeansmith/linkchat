@@ -55,6 +55,7 @@ export const api = {
   crmState: () => get("/crm/state"),
   crmPeople: (q) => get("/crm/people" + (q ? `?q=${encodeURIComponent(q)}` : "")),
   crmWaiting: () => get("/crm/waiting"),
+  crmEvents: (limit = 60) => get(`/crm/events?limit=${limit}`),
   crmApprove: (body) => post("/crm/approve", body),
   crmReply: (conv_id, body) => post("/crm/reply", { conv_id, body }),
   // CommentForge fold (Phase 2) — the approval queue on /api/comment/*

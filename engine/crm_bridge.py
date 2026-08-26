@@ -609,6 +609,34 @@ class Bridge:
         except Exception:
             return None, True
 
+    def recent_events(self, limit=60):
+        """The last things that happened, newest first, out of YOUR event log.
+
+        Read-only. LinkChat keeps no log of its own - this is the same file
+        everything else in your CRM writes to, so what shows here is what your
+        CRM actually believes happened, not a second story told by the screen.
+        """
+        ledger = self.parts.get("ledger")
+        if ledger is None:
+            return []
+        try:
+            rows = list(ledger.events())          # oldest first
+        except Exception:
+            return []
+        out = []
+        for ev in rows[-int(limit):]:
+            if not isinstance(ev, dict):
+                continue
+            out.append({
+                "ts": ev.get("ts") or "",
+                "type": ev.get("type") or "",
+                "person": ev.get("person"),
+                "who": (ev.get("identifiers") or [None])[-1],
+                "source": ev.get("source") or "",
+            })
+        out.reverse()                             # newest first, for a screen
+        return out
+
     def would_stage(self, message):
         """Run the checks and report, without writing anything. For the screen."""
         gate = self.parts.get("sendgate")

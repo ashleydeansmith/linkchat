@@ -216,6 +216,15 @@ def crm_people(q: str | None = None, limit: int = 200) -> dict:
     return {"people": people[:limit], "total": len(people)}
 
 
+@app.get("/api/crm/events")
+def crm_events(limit: int = 60) -> dict:
+    """What has happened, newest first. Read-only; sends nothing, changes nothing."""
+    bridge = crm(required=False)
+    if bridge is None:
+        return {"events": [], "why": "no CRM chosen yet"}
+    return {"events": bridge.recent_events(limit=limit)}
+
+
 @app.get("/api/crm/waiting")
 def crm_waiting() -> dict:
     """Everything a sequence has written that you have not looked at yet."""

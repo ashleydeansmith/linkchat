@@ -1,12 +1,17 @@
-// Three destinations, and a settings button. They are the three parts of the job:
-// finding people, talking to them, and deciding what to say next.
+// Four destinations, and a settings button, in the order the job happens:
+// where things stand, the conversations, what to say next, and what is happening
+// right now.
 //
-// Three is still short on purpose. A rail with nine items on a program this size
-// is how a small tool reads as a complicated one.
+// "Find people" was here and is not any more. It ran the four jobs from Session
+// 2 of your CRM, which most people had not built yet, so it showed a paragraph
+// explaining why it was empty. A tab that is usually empty teaches somebody the
+// program is half-finished. The screen is kept in _retired/ rather than deleted;
+// connect, withdraw and searching are being built properly into Campaigns.
 const NAV = [
+  { key: "home",  label: "Home",          ic: "⌂" },
   { key: "inbox", label: "Conversations", ic: "💬" },
-  { key: "flows", label: "Sequences", ic: "⤷" },
-  { key: "find",  label: "Find people",  ic: "🔍" },
+  { key: "flows", label: "Sequences",     ic: "⤷" },
+  { key: "live",  label: "Live",          ic: "◉" },
 ];
 
 export default function Sidebar({ route, onNavigate, onOpenSetup }) {
