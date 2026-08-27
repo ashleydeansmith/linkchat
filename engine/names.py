@@ -136,6 +136,8 @@ def first_name_of(full_name: str | None) -> str:
     words = cleaned.split() if cleaned else []
     if not words:
         return ""
+    if len(words) == 1:
+        return words[0]          # one word is all there is ("Mr T" -> "T"): keep it, as before
     # A name written initial-first ("V. Narendra Pulipati", "J. Paul Hendricks") must not be
     # greeted by the initial (2026-08-27). Skip leading initials and take the next real word.
     # If that word is the LAST one and an initial was skipped ("K Ahmed", "J. Usher"), it is
