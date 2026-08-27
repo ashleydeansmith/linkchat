@@ -133,7 +133,22 @@ def first_name_of(full_name: str | None) -> str:
     """The one word to greet someone by. Empty when the field holds no real name -
     callers fall back to "there" or send nothing."""
     cleaned = clean_name(full_name)
-    return cleaned.split()[0] if cleaned else ""
+    words = cleaned.split() if cleaned else []
+    if not words:
+        return ""
+    # A name written initial-first ("V. Narendra Pulipati", "J. Paul Hendricks") must not be
+    # greeted by the initial (2026-08-27). Skip leading initials and take the next real word.
+    # If that word is the LAST one and an initial was skipped ("K Ahmed", "J. Usher"), it is
+    # a surname, and there is no confident first name: say nothing rather than the wrong thing.
+    skipped = 0
+    for i, w in enumerate(words):
+        if len(w.rstrip(".")) <= 1:
+            skipped += 1
+            continue
+        if skipped and i == len(words) - 1:
+            return ""
+        return w
+    return ""
 
 
 # --- what kind of decoration, so the alarm can stay honest --------------------
