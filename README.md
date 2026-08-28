@@ -67,6 +67,12 @@ To see what your copy can do:
     python -m engine serve       the engine only, no window
     python -m engine crm         what LinkChat can see of your CRM, then stop
     python -m engine inbox-sync  read your LinkedIn inbox and store what is there
+    python -m engine flow --pass --commit
+                                 walk your sequences: read replies, put what is due in
+                                 your review queue. Nothing is sent by this command -
+                                 a message goes when you press approve on the Cockpit.
+    python -m engine flow --staged
+                                 what is waiting for you to release
 
 ## Checking it still works
 

@@ -464,6 +464,13 @@ def import_flows_json(src, name: str = "imported flow", activate: bool = False,
                     edge(mkey, target, "label", f.get("on"))
     # activate OUTSIDE the import transaction: activate_version opens its own
     # connection and must see the committed draft
+        # The flow engine (lifted from the parent program, 2026-08-27): the STEPS a person is
+        # walked through - the opener, the follow-ups, the stall nudge, where it ends - and
+        # every step's words as an arm. A v8 file (templates + followups) is translated; a
+        # v9 file (explicit steps) is read as written. A shape the engine could not walk
+        # is refused here, so a broken flow never becomes a draft.
+        from . import flow_steps as _fs
+        _fs.attach_program(conn, vid, doc)
     if activate:
         activate_version(vid)
     return vid
@@ -532,10 +539,37 @@ def export_flows_json(version_id: int) -> dict:
             b["templates"] = templates
         if (n["meta"] or {}).get("entry_timeout_days"):
             b["entry_timeout_days"] = n["meta"]["entry_timeout_days"]
+        # the engine's steps, kept so an export walks the same way when it comes back
+        _m = n.get("meta") or {}
+        if _m.get("steps"):
+            b["steps"] = _m["steps"]
+        if _m.get("parent"):
+            b["parent"] = _m["parent"]
+        if "silence" in _m and _m["silence"] != "absent":
+            b["silence"] = _m["silence"]
         branches.append(b)
     out = {"version": g["id"], "lineage": g["lineage_uuid"], "name": g["name"],
            "openers": openers, "branches": branches}
     out.update(g["meta"] or {})
+    # every step's words as a ref -> bubbles map, so a re-import of this export resolves
+    # them without `templates` / `followups` (flow_steps.build_program reads `words`)
+    from . import flow_steps as _fs
+    words_out: dict = {}
+    for a in g["arms"]:
+        if not a.get("enabled", 1):
+            continue
+        nk, ak = a["node_key"], a["arm_key"]
+        if nk.startswith("opener-") and ak == "a":
+            ref = f"openers.{nk.removeprefix('opener-')}.text"
+        elif nk == f"{_fs.PARENT_KEY}-move":
+            ref = f"silence.{ak}"
+        elif nk.endswith("-move") and ak != "a":
+            ref = f"{nk.removesuffix('-move')}.{ak}"
+        else:
+            continue
+        words_out[ref] = _fs._bubbles(a["body"])
+    if words_out:
+        out["words"] = words_out
     return out
 
 

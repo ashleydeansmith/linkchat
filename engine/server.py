@@ -509,9 +509,33 @@ def _carry(bridge, *, to, identifier, body, thread_urn, kind="message",
 def crm_approve(body: ApproveBody) -> dict:
     """You, saying a message a sequence wrote may go - and then it going."""
     bridge = crm(required=True)
-    return _carry(bridge, to=body.to, identifier=body.identifier, body=body.body,
-                  thread_urn=body.thread_urn, kind=body.kind,
-                  written_by=bridge.AUTHOR, item_id=body.item_id)
+    result = _carry(bridge, to=body.to, identifier=body.identifier, body=body.body,
+                    thread_urn=body.thread_urn, kind=body.kind,
+                    written_by=bridge.AUTHOR, item_id=body.item_id)
+    _tell_the_flow_engine(bridge, body.item_id, result)
+    return result
+
+
+def _tell_the_flow_engine(bridge, item_id, result) -> None:
+    """A message the flow engine STAGED carries the engine's own key as its item id. The
+    engine walks the person on to their next step ONLY when the road says it went; a
+    refused or failed carry leaves them where they were, with the reason on their log.
+    Any other item id is simply not the engine's, and the engine says so and does nothing.
+    Best effort: the message has already gone or not gone, and a book-keeping slip must
+    never be reported as a send failure."""
+    if not item_id:
+        return
+    try:
+        from . import flow_run as FR
+        who = ""
+        try:
+            who = bridge.you() or ""
+        except Exception:
+            who = ""
+        FR.release(item_id, "sent" if result.get("sent") else "not sent: %s" % result.get("why", ""),
+                   by=who or "you")
+    except Exception:
+        pass
 
 
 @app.post("/api/crm/approve-suggested")
