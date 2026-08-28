@@ -37,7 +37,14 @@
     "      engine picks a gap between four and eighteen minutes, so it never looks",
     "      like a machine answering on the second).",
     "  silence  a conversation that went quiet after you replied: one small nudge",
-    "      three days on. If that is three days late it is skipped, not sent stale."
+    "      three days on. If that is three days late it is skipped, not sent stale.",
+    "",
+    "THE SWITCH ON EACH STEP. Every step that sends carries \"auto_send\": false. Off means",
+    "the message waits on your Cockpit for you to press approve. Set it to true on a step",
+    "and that step goes on its own - a matched reply's answer you have written and trust,",
+    "say - through exactly the same checks, released under your name because you switched",
+    "it on. Your send gate still refuses any gap, so a step you have not written cannot go",
+    "whatever the switch says."
   ],
   "openers": [
     {
@@ -73,7 +80,8 @@
             "minutes": "answer",
             "from": "reply"
           },
-          "on_reply": "interrupt"
+          "on_reply": "interrupt",
+          "auto_send": false
         }
       ],
       "next_move": "{what you say to somebody who is genuinely interested - answer their question first, then one line about what happens next}",
@@ -115,7 +123,8 @@
             "minutes": "answer",
             "from": "reply"
           },
-          "on_reply": "interrupt"
+          "on_reply": "interrupt",
+          "auto_send": false
         }
       ],
       "next_move": "{what you say to somebody who has said no - short, no argument, leaves the door open}",
@@ -153,7 +162,8 @@
             "minutes": "answer",
             "from": "reply"
           },
-          "on_reply": "interrupt"
+          "on_reply": "interrupt",
+          "auto_send": false
         }
       ],
       "next_move": "{what you say to somebody who was only being polite - one question they can answer in a sentence, about them and not about you}",
@@ -188,7 +198,8 @@
             "days": 0,
             "from": "accepted"
           },
-          "on_reply": "interrupt"
+          "on_reply": "interrupt",
+          "auto_send": false
         },
         {
           "key": "f1",
@@ -198,7 +209,8 @@
             "days": 4,
             "from": "previous_send"
           },
-          "on_reply": "interrupt"
+          "on_reply": "interrupt",
+          "auto_send": false
         },
         {
           "key": "leave",
@@ -238,7 +250,8 @@
           "from": "our_last_send"
         },
         "max_late_days": 3,
-        "on_reply": "interrupt"
+        "on_reply": "interrupt",
+        "auto_send": false
       }
     ]
   },

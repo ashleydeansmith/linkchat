@@ -93,9 +93,9 @@ def inbox_fetch_one(argv):
 def flow(argv):
     """The sequence walker, shared with the parent program - on LinkChat's terms.
 
-    HERE IT NEVER CARRIES A MESSAGE. The parent program has a setting that lets the
-    engine send what is due; LinkChat's settings have no such field, so in LinkChat it
-    is off and cannot be turned on. What the walker does instead, each pass:
+    BY DEFAULT IT CARRIES NO MESSAGE. The parent program has a setting that lets the
+    engine send what is due; LinkChat's settings have no such field. What the walker does
+    instead, each pass:
 
       1. reads your inbox copy for replies and matches them against the branch the
          person is standing on (only that branch's word lists - never a later stage's)
@@ -106,6 +106,11 @@ def flow(argv):
     Then it stops. The message sits on your Cockpit until you read it and press
     approve, and pressing approve carries it through the one road out - the same five
     checks as everything else, plus the sixth (a sequence cannot release its own work).
+
+    A STAGE YOU SWITCH ON. Put `"auto_send": true` on a step in your sequence file and that
+    step goes without a press of approve - the same road, the same five checks, released
+    under your name because you switched it on. Switch it off again by removing the line.
+    Sensible for a matched reply's answer you have written and trust; never for a gap.
     When it has actually gone, the road tells the engine, and only then is the person
     walked on to their next step. A refused or failed carry leaves them where they were.
 
@@ -114,6 +119,7 @@ def flow(argv):
     """
     from . import flow_run as FR
     FR.STAGER = _stage_in_your_crm
+    FR.SENDER = _send_through_the_one_road
     if "--commit" in argv and "--pass" in argv:
         _link_inbox_to_people()
     import sys as _sys
@@ -169,6 +175,50 @@ def _link_inbox_to_people():
             cx.close()
         except Exception:
             pass
+
+
+def _send_through_the_one_road(page, lead, bubbles, rung, ctx):
+    """A stage the member switched on (`"auto_send": true` in their sequence file) sends
+    without a press of approve — but never without the road. The words are written down as
+    the sequence's (propose), then carried through server._carry: the same five checks as
+    everything else, the review step releasing it under the member's own name because the
+    member switched that stage on. A refusal from any check is a 'skipped' to the engine,
+    which tries again next pass; nothing is ever sent around the road."""
+    from . import crm_bridge
+    from . import server as S
+    from .inbox import db as cvdb
+    bridge = crm_bridge.open_crm()
+    thread_urn = ""
+    try:
+        cx = cvdb.connect()
+        row = cx.execute("SELECT thread_urn FROM conversations WHERE lead_id=? ORDER BY last_msg_at DESC LIMIT 1",
+                         (lead["id"],)).fetchone()
+        thread_urn = (row["thread_urn"] if row else "") or ""
+        cx.close()
+    except Exception:
+        thread_urn = ""
+    if not thread_urn:
+        return "skipped"          # no conversation to put it in yet: sync the inbox first
+    body = "\n\n".join(b for b in bubbles if b)
+    to = lead.get("full_name") or ""
+    identifier = lead.get("profile_url") or to
+    item_id = ctx.get("send_key") or ""
+    summary = "%s (auto-send stage): %s" % (ctx.get("node_key"), " ".join(body.split())[:70])
+    try:
+        bridge.propose(item_id, body, summary=summary, to=to, identifier=identifier, thread_urn=thread_urn)
+        r = S._carry(bridge, to=to, identifier=identifier, body=body, thread_urn=thread_urn,
+                     kind="message", written_by=bridge.AUTHOR, item_id=item_id)
+    except Exception as exc:  # noqa: BLE001 — a refusal from a check, or the road not open
+        try:
+            bridge.log("auto_send_refused", identifier, to, payload={"stage": ctx.get("node_key"), "why": str(exc)[:200]})
+        except Exception:
+            pass
+        return "skipped"
+    try:
+        bridge.log("auto_send_stage", identifier, to, payload={"stage": ctx.get("node_key"), "sent": bool(r.get("sent"))})
+    except Exception:
+        pass
+    return "sent" if r.get("sent") else "unconfirmed"
 
 
 def _stage_in_your_crm(lead, bubbles, send_key, node_key, ref):

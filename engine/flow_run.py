@@ -54,6 +54,13 @@ from . import flows_engine as fe
 #     STAGER(lead_row: dict, bubbles: list[str], send_key: str, node_key: str, ref: str) -> str | None
 # The host's own send road then carries the approved words and calls release(send_key, "sent").
 STAGER: Callable | None = None
+# THE HOST'S SENDER (2026-08-28). A step marked `"auto_send": true` in the flow file sends
+# itself even when the global switch is off (a stage the member switched on). Where the host
+# has no sender of its own for the engine to call (LinkChat), it sets this to its ONE road
+# out, and the engine never grows a second one:
+#     SENDER(page, lead_row: dict, bubbles: list[str], rung: int, ctx: dict) -> outcome
+# outcome as the sender's: 'sent' | 'replied' | 'skipped' | 'unconfirmed' | 'failed:...'
+SENDER: Callable | None = None
 
 AGENT = "linkforge-flow"
 LADDER = "R0"
@@ -919,7 +926,8 @@ def pass_(now: datetime | None = None, *, live: bool = False, budget: dict | Non
                         summary["stopped"] = "lock not re-acquired after the pacing gap"
                         return summary
                 elif action in SEND_ACTIONS:
-                    if not fresh and auto:
+                    step_auto = auto or bool(step.get("auto_send"))   # the stage's own switch
+                    if not fresh and step_auto:
                         continue                      # the gate: classify, never send, on a stale mirror
                     # (staging for a human needs no fresh mirror: they read the thread before releasing)
                     cap_action = "message"
@@ -955,7 +963,7 @@ def pass_(now: datetime | None = None, *, live: bool = False, budget: dict | Non
                         continue
                     conn.commit()   # the intent row is on disk and the lock is released before the click
                     sends_attempted += 1
-                    if not auto:
+                    if not step_auto:
                         # STAGED, not sent: the words wait for a human; the host's send road
                         # carries them and calls release(). The person is no longer 'due'.
                         conn.execute("UPDATE journey_sends SET status='staged', words=? WHERE send_key=?",
@@ -981,10 +989,14 @@ def pass_(now: datetime | None = None, *, live: bool = False, budget: dict | Non
                         lead = conn.execute("SELECT * FROM leads WHERE id=?", (j["lead_id"],)).fetchone()
                         rung = j["sends_done"]
                         try:
-                            if sender is None:
-                                outcome = _default_sender(page, dict(lead), bubbles, rung, flow_ctx=_stamp_ctx(conn, v["id"], ref))
-                            else:
+                            if sender is not None:
                                 outcome = sender(page, dict(lead), bubbles, rung)
+                            elif SENDER is not None:
+                                # the host's one road out (LinkChat), for a stage switched on
+                                outcome = SENDER(page, dict(lead), bubbles, rung,
+                                                 {"send_key": key, "node_key": node, "ref": ref, "auto_send": bool(step.get("auto_send"))})
+                            else:
+                                outcome = _default_sender(page, dict(lead), bubbles, rung, flow_ctx=_stamp_ctx(conn, v["id"], ref))
                         except Exception as e:  # noqa: BLE001
                             outcome = f"failed:{type(e).__name__}"
                         # one line per send, flushed: the daemon's supervisor reads progress off

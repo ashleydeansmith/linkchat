@@ -150,6 +150,29 @@ try:
     check("the answer is staged for you a few minutes after their reply - not sent",
           s["staged"] == 1 and s["sent"] == 0 and STAGED[-1][3] == "R1.move", s)
 
+    print("\n=== 4b. a stage the member switched on goes through the one road, never around it ===")
+    ROAD = []
+    def road(page, lead, bubbles, rung, ctx):
+        ROAD.append((lead["full_name"], ctx["node_key"], ctx["auto_send"])); return "sent"
+    FR.SENDER = road
+    real_read = FR.fs.read_program
+    def with_auto(conn, vid):
+        p = real_read(conn, vid)
+        for st in p["branches"]["R0"]["steps"]:
+            if st.get("key") == "opener":
+                st["auto_send"] = True
+        return p
+    FR.fs.read_program = with_auto
+    lead3 = add_lead("Cal Switchedon", "https://www.linkedin.com/in/cal-switchedon")
+    j3 = FR.enrol(lead3, now=T0); STAGED.clear()
+    s = FR.pass_(now=T0, live=True, sender=None, can_act=OK)
+    check("auto_send:true on the opener: it goes through the road hook, nothing is staged, the person moves on",
+          ROAD == [("Cal Switchedon", "R0.opener", True)] and not STAGED and journey(j3)["node_key"] == "R0.f1", (ROAD, STAGED, s))
+    FR.fs.read_program = real_read; FR.SENDER = None
+    src = (ROOT / "engine" / "__main__.py").read_text(encoding="utf-8")
+    check("LinkChat's road hook carries through server._carry and proposes first (the sixth check)",
+          "S._carry(" in src and "bridge.propose(" in src.split("def _send_through_the_one_road")[1].split("def _stage_in_your_crm")[0])
+
     print("\n=== 5. tying inbox conversations to people ===")
     from engine.__main__ import _link_inbox_to_people
     add_lead("Cara Example", "https://www.linkedin.com/in/cara-example")

@@ -69,8 +69,10 @@ To see what your copy can do:
     python -m engine inbox-sync  read your LinkedIn inbox and store what is there
     python -m engine flow --pass --commit
                                  walk your sequences: read replies, put what is due in
-                                 your review queue. Nothing is sent by this command -
-                                 a message goes when you press approve on the Cockpit.
+                                 your review queue. A message goes when you press approve
+                                 on the Cockpit - unless you switched that stage on with
+                                 "auto_send": true in your sequence file, when it goes on
+                                 its own through the same checks.
     python -m engine flow --staged
                                  what is waiting for you to release
 
