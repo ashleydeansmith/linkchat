@@ -15,9 +15,8 @@ try:
 except Exception:
     pass
 
-PDF = pathlib.Path(
-    r"C:\Users\somth\Documents\Second Brain\Projects\Accelerator-Beta"
-    r"\Session 4\LinkChat - Install and Walk Through.pdf")
+# The PDF beside this folder, in the repo's own guide/ (a path on one computer is not shipped).
+PDF = pathlib.Path(__file__).resolve().parent.parent / "LinkChat - Install and Walk Through.pdf"
 
 # Read the words with a real PDF reader. Pulling them out of the compressed
 # streams by hand found nothing at all, and "no addresses found" from a document

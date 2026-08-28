@@ -51,7 +51,9 @@ print("\n=== 7. the engine files are the parent program's, unchanged ===")
 PARENT = Path.home() / "Documents" / "LinkForge" / "linkforge"
 for f in ("flow_steps.py", "flow_run.py", "flow_actions.py"):
     if PARENT.exists():
-        same = (PARENT / f).read_bytes() == (ROOT / "engine" / f).read_bytes()
+        # a fresh clone on Windows checks out CRLF; the rule is about the words, not the endings
+        norm = lambda b: b.replace(b"\r\n", b"\n")  # noqa: E731
+        same = norm((PARENT / f).read_bytes()) == norm((ROOT / "engine" / f).read_bytes())
         check("%s is byte-identical to the parent program's" % f, same)
     else:
         check("%s: parent program not on this machine, nothing to compare" % f, True)

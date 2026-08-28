@@ -24,9 +24,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SHOTS = HERE / "shots"
-OUT_PDF = Path(r"C:\Users\somth\Documents\Second Brain\Projects"
-               r"\Accelerator-Beta\Session 4\LinkChat - Install and Walk Through.pdf")
-ALSO = HERE.parent / "LinkChat - Install and Walk Through.pdf"
+# The finished PDF lives beside this folder, in the repo's own guide/ — never in a folder
+# on one particular computer (the ship check refuses a file that names one).
+OUT_PDF = HERE.parent / "LinkChat - Install and Walk Through.pdf"
+ALSO = OUT_PDF
 
 SECTIONS = 11          # blocks in the position bar
 
