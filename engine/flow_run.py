@@ -405,12 +405,71 @@ def mirror_gate(now: datetime, max_age_min: int) -> tuple[bool, str]:
     return True, "fresh"
 
 
+def link_threads(conn, now: datetime) -> dict:
+    """Tie each active journey's person to their inbox thread where the inbox read did not:
+    by member id (leads.member_urn inside the thread's profile address), else by a name only
+    ONE person has and only one thread carries (ruling R-L). A person parked as 'unlinked'
+    whose thread is found goes back on the clock. Never links on a shared name."""
+    out = {"linked": 0, "revived": 0}
+    try:
+        cw = sqlite3.connect(str(_conv_db_path()), timeout=15.0)
+        cw.row_factory = sqlite3.Row
+    except Exception:  # noqa: BLE001
+        return out
+    try:
+        ccols = {r[1] for r in cw.execute("PRAGMA table_info(conversations)")}
+        has_join = "join_how" in ccols
+        rows = conn.execute("SELECT j.id, j.lead_id, j.waiting_for, l.full_name, l.profile_url FROM journeys j JOIN leads l ON l.id=j.lead_id "
+                            "WHERE j.status='active'").fetchall()
+        lcols = {r[1] for r in conn.execute("PRAGMA table_info(leads)")}
+        for j in rows:
+            if cw.execute("SELECT 1 FROM conversations WHERE lead_id=? LIMIT 1", (j["lead_id"],)).fetchone():
+                continue
+            hit, how = None, None
+            if "member_urn" in lcols:
+                urn = conn.execute("SELECT member_urn FROM leads WHERE id=?", (j["lead_id"],)).fetchone()[0]
+                if urn:
+                    r = cw.execute("SELECT id FROM conversations WHERE lead_id IS NULL AND participant_profile_url LIKE ? LIMIT 2", (f"%{urn}%",)).fetchall()
+                    if len(r) == 1:
+                        hit, how = r[0]["id"], "urn"
+            if hit is None and j["full_name"]:
+                name = " ".join(j["full_name"].split()).lower()
+                allm = cw.execute("SELECT id, lead_id FROM conversations WHERE lower(trim(participant_name))=?", (name,)).fetchall()
+                free = [r for r in allm if r["lead_id"] is None]
+                if len(allm) == 1 and len(free) == 1:
+                    hit, how = free[0]["id"], "name"
+            if hit is None:
+                continue
+            if has_join:
+                cw.execute("UPDATE conversations SET lead_id=?, join_how=? WHERE id=? AND lead_id IS NULL", (j["lead_id"], how, hit))
+            else:
+                cw.execute("UPDATE conversations SET lead_id=? WHERE id=? AND lead_id IS NULL", (j["lead_id"], hit))
+            out["linked"] += 1
+            _event(conn, j["id"], j["lead_id"], "linked", None, {"how": how, "conversation_id": hit}, _iso(now))
+            if j["waiting_for"] == "human":
+                last = conn.execute("SELECT kind FROM journey_events WHERE journey_id=? AND kind IN ('unlinked_thread','unmatched_reply','by_hand','parked') "
+                                    "ORDER BY id DESC LIMIT 1", (j["id"],)).fetchone()
+                if last and last["kind"] == "unlinked_thread":
+                    conn.execute("UPDATE journeys SET waiting_for='clock', updated_at=? WHERE id=?", (_iso(now), j["id"]))
+                    out["revived"] += 1
+        cw.commit()
+    except Exception as e:  # noqa: BLE001 — linking is a convenience; it must never stop the pass
+        out["error"] = f"{type(e).__name__}: {e}"[:120]
+    finally:
+        try:
+            cw.close()
+        except Exception:
+            pass
+    return out
+
+
 def read_replies(conn, now: datetime, program: dict | None = None) -> dict:
     """The mirror read. For every active journey: a thread with `last_msg_dir='in'` and
     `last_msg_at` later than our anchor (our last send) is a reply -> paused for a human
     (Phase 2 classifies). No thread linked -> parked as unlinked. Joined on lead_id only."""
     import sqlite3
     rep = {"replies": 0, "unlinked": 0}
+    rep["links"] = link_threads(conn, now)      # tie threads to people first, so replies can be seen
     # 'approval' too: a reply that arrives while the words sit with a human is still a reply
     rows = conn.execute("SELECT * FROM journeys WHERE status='active' AND waiting_for IN ('clock','reply','approval')").fetchall()
     if not rows:
