@@ -356,8 +356,17 @@ def mirror_gate(now: datetime, max_age_min: int) -> tuple[bool, str]:
     try:
         cx = sqlite3.connect(f"file:{_conv_db_path()}?mode=ro", uri=True)
         cx.row_factory = sqlite3.Row
-        rows = cx.execute("SELECT * FROM sync_runs WHERE ok=1 AND finished_at IS NOT NULL "
-                          "ORDER BY finished_at DESC LIMIT 2").fetchall()
+        try:
+            rows = cx.execute("SELECT * FROM sync_runs WHERE ok=1 AND finished_at IS NOT NULL "
+                              "ORDER BY finished_at DESC LIMIT 2").fetchall()
+        except sqlite3.OperationalError as e:
+            if "no such table" in str(e):
+                # an inbox copy that does not record its syncs (LinkChat's): there is no
+                # staleness to measure, so the pass's own reply read and the sender's checks
+                # are the guard — a stage switched on there must not be refused forever
+                cx.close()
+                return True, "the inbox copy does not record its syncs; the reply read stands"
+            raise
         cx.close()
     except Exception as e:  # noqa: BLE001
         return False, f"sync_runs unreadable: {type(e).__name__}"
