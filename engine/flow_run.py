@@ -871,7 +871,7 @@ def pass_(now: datetime | None = None, *, live: bool = False, budget: dict | Non
                     break
                 if action in SEND_ACTIONS and sends_attempted >= send_budget:
                     # the shared send budget is spent on the kinds above this one — by design
-                    summary["stopped"] = summary["stopped"] or f"this pass's {send_budget} sends went to the kinds above {kind}"
+                    summary["stopped"] = summary["stopped"] or f"this pass's {send_budget} sends are spent (stopped in {kind})"
                     break
                 step = steps[idx]
                 node = j["node_key"]
@@ -1398,6 +1398,25 @@ def shadow_run(now: datetime | None = None) -> dict:
 # the live wrapper — lock, own tab, pacing. Nothing calls this until Phase 1's gate.
 # ---------------------------------------------------------------------------
 
+def _refresh_mirror_if_older_than(minutes: int = 5) -> None:
+    """One page of the inbox, refreshed, lockless, own tab — when the newest good sync is
+    older than `minutes`. Never raises: a failed refresh leaves the gate to decide."""
+    try:
+        from .conversations import db as cdb
+        from .conversations.sync import voyager_sync
+        cx = cdb.connect()
+        try:
+            last = cdb.latest_sync_run(cx)
+        finally:
+            cx.close()
+        fin = _parse(last["finished_at"]) if last else None
+        if fin and (utcnow() - fin) < timedelta(minutes=minutes):
+            return
+        voyager_sync(max_pages=1, mode="refresh", own_tab=True, shared_lock=False, action="inbox_read")
+    except Exception as e:  # noqa: BLE001
+        print(f"[flow] inbox refresh before the pass failed: {type(e).__name__}: {e}", flush=True)
+
+
 def live_pass(now: datetime | None = None) -> dict:
     """The real pass: LaneLock (released across every pacing gap), the keeper's browser over
     CDP, a tab of our OWN so no other lane's page is ever moved, the real sender, and the
@@ -1409,6 +1428,11 @@ def live_pass(now: datetime | None = None) -> dict:
     cfg = Config.load()
     if not cfg.enabled or cfg.dry_run:
         return {"stopped": "engine not armed"}
+    # A FRESH INBOX READ FIRST. The daemon runs one lane at a time, so the 5-minute inbox
+    # lane cannot run while a pass sends; by the next pass the mirror could be past the
+    # 30-minute gate (it was 38 min old at 09:09 on 2026-08-28, a watchdog run in between).
+    # The read is lockless and in its own tab, so nobody waits on it.
+    _refresh_mirror_if_older_than(minutes=5)
     lane = traffic.LaneLock(agent=AGENT, wait_sec=300)
     if not lane.acquire():
         return {"stopped": "another LinkedIn lane is busy"}
