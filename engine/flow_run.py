@@ -1027,7 +1027,10 @@ def pass_(now: datetime | None = None, *, live: bool = False, budget: dict | Non
                                 outcome = SENDER(page, dict(lead), bubbles, rung,
                                                  {"send_key": key, "node_key": node, "ref": ref, "auto_send": bool(step.get("auto_send"))})
                             else:
-                                outcome = _default_sender(page, dict(lead), bubbles, rung, flow_ctx=_stamp_ctx(conn, v["id"], ref))
+                                fctx = dict(_stamp_ctx(conn, v["id"], ref) or {})
+                                if kind == "reply":
+                                    fctx["answering_reply"] = True    # their message on the thread is the reason, not a stop
+                                outcome = _default_sender(page, dict(lead), bubbles, rung, flow_ctx=fctx or None)
                         except Exception as e:  # noqa: BLE001
                             outcome = f"failed:{type(e).__name__}"
                         # one line per send, flushed: the daemon's supervisor reads progress off
@@ -1247,7 +1250,7 @@ def status(conn=None) -> dict:
 # the migration — Build Plan V3 §9.1, as ruled (R-B, R-L)
 # ---------------------------------------------------------------------------
 
-def migrate_completed(now: datetime | None = None, commit: bool = False) -> dict:
+def migrate_completed(now: datetime | None = None, commit: bool = False, repliers_since: str | None = None) -> dict:
     """The 633 `sequence_state` rows marked completed after one message become journeys
     at R0.f1, due four days after their last send, on the cold table — when they pass
     every exclusion. Previews by default; `commit=True` writes. The rule, as run:
@@ -1314,6 +1317,15 @@ def migrate_completed(now: datetime | None = None, commit: bool = False) -> dict
                 inbound = _ms_iso(th["last_msg_at"]) if th["last_msg_dir"] == "in" else None
                 if inbound and inbound > (last_sent or ""):
                     out["replied"] += 1
+                    if repliers_since and inbound >= repliers_since:
+                        # they answered the old engine's opener and nobody answered them (2026-08-28):
+                        # stand them at follow-up 1, anchored on the opener, and the next pass's
+                        # reply read sees their message, matches it, and answers it
+                        out["repliers_in"] = out.get("repliers_in", 0) + 1
+                        if commit:
+                            _write_migrated(conn, r["lead_id"], lineage, v["id"], "R0.f1", arm, last_sent, f1_wait, now,
+                                            status="active", waiting="clock", why="migrated_replier", join_how=th["join_how"],
+                                            expected=ladder_rungs(program))
                     continue
                 if r["reply_stamps"]:
                     out["by_hand"] += 1
@@ -1637,7 +1649,8 @@ def main() -> None:
                     f"version {r['draft_version']}; lead {lead} will get the words on the next pass", **r)
         return
     if "--migrate" in args:
-        r = migrate_completed(commit="--commit" in args)
+        since = args[args.index("--repliers-since") + 1] if "--repliers-since" in args else None
+        r = migrate_completed(commit="--commit" in args, repliers_since=since)
         print(json.dumps(r, ensure_ascii=False, indent=1))
         emit_result("flow", "stopped" not in r,
                     f"Migration {'WRITTEN' if r.get('commit') else 'preview'}: {r.get('migrate', 0)} to R0.f1 "
