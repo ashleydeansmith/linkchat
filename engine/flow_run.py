@@ -134,6 +134,10 @@ _JOURNEY_DDL = [
     """CREATE TABLE IF NOT EXISTS journey_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT, journey_id INTEGER NOT NULL, lead_id INTEGER NOT NULL,
         at TEXT NOT NULL, kind TEXT NOT NULL, node_key TEXT, detail TEXT)""",
+    # People the flow must never put in a sequence (clients, members, people Ashley names):
+    # a standing list, one row per person, with the reason and who said so (2026-08-28).
+    """CREATE TABLE IF NOT EXISTS leads_excluded (
+        lead_id INTEGER PRIMARY KEY, reason TEXT NOT NULL, by_whom TEXT, at TEXT NOT NULL)""",
 ]
 
 
@@ -255,6 +259,8 @@ def enrol(lead_id: int, now: datetime | None = None, accepted_at: str | None = N
         if conn.execute("SELECT 1 FROM journeys WHERE lead_id=? AND lineage_uuid=?",
                         (lead_id, v["lineage_uuid"])).fetchone():
             return None
+        if conn.execute("SELECT 1 FROM leads_excluded WHERE lead_id=?", (lead_id,)).fetchone():
+            return None          # a client, a member, or somebody Ashley named: never in a sequence
         first = program["branches"][LADDER]["steps"][0]
         wait = int((first.get("wait") or {}).get("days") or 0)
         anchor = _parse(acc) or now
@@ -271,6 +277,21 @@ def enrol(lead_id: int, now: datetime | None = None, accepted_at: str | None = N
                {"arm": arm_used, "expected_rungs": ladder_rungs(program),
                 "existing_connection": bool(allow_connection)}, _iso(now))
         return jid
+
+
+def exclude(lead_id: int, reason: str, by_whom: str = "Ashley", now: datetime | None = None) -> bool:
+    """Put a person on the standing never-sequence list. An active journey is ended with a
+    'retired' event so no scheduled message follows. True when newly added."""
+    now = now or utcnow()
+    with db.connect() as conn:
+        ensure_schema(conn)
+        if conn.execute("SELECT 1 FROM leads_excluded WHERE lead_id=?", (lead_id,)).fetchone():
+            return False
+        conn.execute("INSERT INTO leads_excluded (lead_id, reason, by_whom, at) VALUES (?,?,?,?)", (lead_id, reason, by_whom, _iso(now)))
+        for j in conn.execute("SELECT id, node_key FROM journeys WHERE lead_id=? AND status IN ('active','paused_reply','needs_attention','parked')", (lead_id,)).fetchall():
+            conn.execute("UPDATE journeys SET status='done', waiting_for='nothing', updated_at=? WHERE id=?", (_iso(now), j["id"]))
+            _event(conn, j["id"], lead_id, "retired", j["node_key"], {"why": f"excluded: {reason}", "by": by_whom}, _iso(now))
+        return True
 
 
 def opener_d_ready(conn, v, program: dict) -> tuple[bool, str]:
@@ -322,6 +343,7 @@ def enrol_connections(per_day: int = 200, commit: bool = False, now: datetime | 
                   AND NOT EXISTS (SELECT 1 FROM messages m WHERE m.lead_id = l.id)
                   AND NOT EXISTS (SELECT 1 FROM journeys j WHERE j.lead_id = l.id)
                   AND NOT EXISTS (SELECT 1 FROM red_list r WHERE r.lead_id = l.id OR r.canon_url = l.profile_url)
+                  AND NOT EXISTS (SELECT 1 FROM leads_excluded e WHERE e.lead_id = l.id)
                   AND NOT EXISTS (SELECT 1 FROM mirror.conversations x WHERE x.lead_id = l.id)
                 ORDER BY CASE WHEN l.connected_rank IS NULL THEN 1 ELSE 0 END, l.connected_rank ASC,
                          COALESCE(l.connected_on, l.accepted_at, l.created_at) DESC
@@ -1348,6 +1370,7 @@ def enrol_new_accepts(now: datetime | None = None, commit: bool = False) -> dict
         db.sync_red_list_from_json()
         ids = [r[0] for r in conn.execute(
             "SELECT l.id FROM leads l WHERE l.status='accepted' AND l.is_connection=0 AND l.accepted_at IS NOT NULL "
+            "AND NOT EXISTS (SELECT 1 FROM leads_excluded e WHERE e.lead_id=l.id) "
             "AND l.id NOT IN (SELECT lead_id FROM journeys WHERE lineage_uuid=?) "
             "AND NOT EXISTS (SELECT 1 FROM messages m WHERE m.lead_id=l.id AND m.status='sent') "
             "AND NOT EXISTS (SELECT 1 FROM red_list r WHERE r.lead_id=l.id OR r.canon_url=l.profile_url OR r.member_urn=l.profile_url)",
@@ -1579,6 +1602,14 @@ def main() -> None:
         return
     if "--staged" in args:
         print(json.dumps(staged_list(), ensure_ascii=False, indent=1))
+        return
+    if "--exclude" in args:
+        # flow --exclude --lead N --reason "client" [--by Ashley]
+        def _arg(flag):
+            return args[args.index(flag) + 1] if flag in args and args.index(flag) + 1 < len(args) else None
+        lid = int(_arg("--lead") or 0)
+        added = exclude(lid, _arg("--reason") or "named by Ashley", by_whom=_arg("--by") or "Ashley")
+        emit_result("flow", True, f"lead {lid} {'added to' if added else 'already on'} the never-sequence list")
         return
     if "--crm-link" in args:
         from . import flow_crm as FC
